@@ -1,0 +1,980 @@
+table_name,column_name,data_type,character_maximum_length,is_nullable,column_default
+accessory_gallery,id,character varying,36,NO,(gen_random_uuid())::text
+accessory_gallery,company_id,character varying,36,NO,
+accessory_gallery,name,text,,NO,
+accessory_gallery,image_url,text,,YES,
+accessory_gallery,is_default,boolean,,YES,false
+accessory_gallery,source,text,,YES,'merchant'::text
+accessory_gallery,review_status,text,,YES,'none'::text
+accessory_gallery,reviewed_at,timestamp with time zone,,YES,
+accessory_gallery,is_deleted,boolean,,YES,false
+accessory_gallery,created_at,timestamp with time zone,,YES,now()
+accessory_gallery,updated_at,timestamp with time zone,,YES,now()
+agents,id,character varying,36,NO,gen_random_uuid()
+agents,company_id,character varying,36,NO,
+agents,name,text,,NO,
+agents,employee_id,text,,YES,
+agents,hire_date,timestamp with time zone,,YES,
+agents,position,text,,YES,'售中客服'::text
+agents,training_stage,text,,YES,'基础'::text
+agents,status,text,,YES,'在职'::text
+agents,created_at,timestamp with time zone,,NO,now()
+agents,updated_at,timestamp with time zone,,YES,now()
+agents,team_id,character varying,36,YES,
+agents,role_tag,text,,YES,'售前'::text
+agents,skill_tags,text,,YES,'{}'::text[]
+ai_chat_history,id,uuid,,NO,gen_random_uuid()
+ai_chat_history,user_id,character varying,36,NO,
+ai_chat_history,company_id,character varying,36,YES,
+ai_chat_history,title,character varying,,NO,''::character varying
+ai_chat_history,messages,jsonb,,NO,'[]'::jsonb
+ai_chat_history,tags,ARRAY,,YES,'{}'::character varying[]
+ai_chat_history,is_archived,boolean,,NO,false
+ai_chat_history,created_at,timestamp with time zone,,NO,now()
+ai_chat_history,updated_at,timestamp with time zone,,NO,now()
+ai_checkup_submissions,id,character varying,36,NO,(gen_random_uuid())::text
+ai_checkup_submissions,user_id,character varying,36,NO,
+ai_checkup_submissions,company_id,character varying,36,YES,
+ai_checkup_submissions,checkup_type,character varying,30,NO,
+ai_checkup_submissions,submission_data,jsonb,,NO,'{}'::jsonb
+ai_checkup_submissions,result_data,jsonb,,YES,'{}'::jsonb
+ai_checkup_submissions,phrase_id,character varying,36,YES,
+ai_checkup_submissions,created_at,timestamp with time zone,,YES,now()
+ai_checkup_submissions,updated_at,timestamp with time zone,,YES,now()
+approval_flows,id,character varying,36,NO,(gen_random_uuid())::text
+approval_flows,company_id,character varying,36,NO,
+approval_flows,record_id,character varying,36,YES,
+approval_flows,amount,numeric,,NO,0
+approval_flows,reason,text,,YES,
+approval_flows,submitted_by,character varying,36,NO,
+approval_flows,approved_by,character varying,36,YES,
+approval_flows,status,character varying,20,NO,'pending'::character varying
+approval_flows,reject_reason,text,,YES,
+approval_flows,level,character varying,20,NO,'manager'::character varying
+approval_flows,threshold_config,jsonb,,YES,'{}'::jsonb
+approval_flows,created_at,timestamp with time zone,,YES,now()
+approval_flows,approved_at,timestamp with time zone,,YES,
+approval_thresholds,id,character varying,36,NO,(gen_random_uuid())::text
+approval_thresholds,company_id,character varying,36,NO,
+approval_thresholds,manager_limit,numeric,,YES,500
+approval_thresholds,boss_limit,numeric,,YES,2000
+approval_thresholds,boss_plus_note,boolean,,YES,true
+approval_thresholds,created_at,timestamp with time zone,,YES,now()
+approval_thresholds,updated_at,timestamp with time zone,,YES,now()
+audit_logs,id,character varying,36,NO,(gen_random_uuid())::text
+audit_logs,user_id,character varying,36,NO,
+audit_logs,company_id,character varying,36,YES,
+audit_logs,action,character varying,50,NO,
+audit_logs,resource_type,character varying,50,NO,
+audit_logs,resource_id,character varying,36,YES,
+audit_logs,detail,jsonb,,YES,'{}'::jsonb
+audit_logs,ip_address,character varying,45,YES,
+audit_logs,created_at,timestamp with time zone,,YES,now()
+business_records,id,character varying,36,NO,(gen_random_uuid())::text
+business_records,company_id,character varying,36,NO,
+business_records,user_id,character varying,36,NO,
+business_records,year,integer,,NO,
+business_records,month,integer,,NO,
+business_records,total_revenue,numeric,,YES,0
+business_records,purchase_total,numeric,,YES,0
+business_records,ad_total,numeric,,YES,0
+business_records,shipping_pack_total,numeric,,YES,0
+business_records,salary_total,numeric,,YES,0
+business_records,rent_total,numeric,,YES,0
+business_records,utilities_total,numeric,,YES,0
+business_records,after_sales_total,numeric,,YES,0
+business_records,returns_total,numeric,,YES,0
+business_records,platform_fee_total,numeric,,YES,0
+business_records,total_expense,numeric,,YES,0
+business_records,net_profit,numeric,,YES,0
+business_records,ad_roi,numeric,,YES,0
+business_records,fixed_rent,numeric,,YES,0
+business_records,fixed_salary,numeric,,YES,0
+business_records,fixed_utilities,numeric,,YES,0
+business_records,fixed_after_sales,numeric,,YES,0
+business_records,fixed_returns,numeric,,YES,0
+business_records,monthly_orders,integer,,YES,0
+business_records,notes,text,,YES,
+business_records,created_at,timestamp with time zone,,YES,now()
+business_records,updated_at,timestamp with time zone,,YES,now()
+cash_flow_records,id,uuid,,NO,gen_random_uuid()
+cash_flow_records,company_id,character varying,,NO,
+cash_flow_records,category,character varying,,NO,
+cash_flow_records,amount,numeric,,NO,
+cash_flow_records,type,character varying,10,NO,
+cash_flow_records,record_date,date,,NO,CURRENT_DATE
+cash_flow_records,note,text,,YES,
+cash_flow_records,created_by,character varying,,YES,
+cash_flow_records,created_at,timestamp with time zone,,NO,now()
+cda_credits,id,character varying,36,NO,(gen_random_uuid())::text
+cda_credits,user_id,character varying,36,NO,
+cda_credits,total_credits,integer,,YES,0
+cda_credits,used_credits,integer,,YES,0
+cda_credits,updated_at,timestamp with time zone,,YES,now()
+certificates,id,uuid,,NO,gen_random_uuid()
+certificates,user_id,character varying,36,NO,
+certificates,certificate_code,character varying,30,NO,
+certificates,user_name,character varying,50,NO,
+certificates,completed_at,timestamp with time zone,,NO,
+certificates,created_at,timestamp with time zone,,NO,now()
+chat_check_results,id,character varying,36,NO,(gen_random_uuid())::text
+chat_check_results,user_id,character varying,36,NO,
+chat_check_results,chat_content,text,,NO,
+chat_check_results,response_score,integer,,YES,0
+chat_check_results,script_score,integer,,YES,0
+chat_check_results,attitude_score,integer,,YES,0
+chat_check_results,solution_score,integer,,YES,0
+chat_check_results,total_score,integer,,YES,0
+chat_check_results,issues,text,,YES,
+chat_check_results,suggestions,text,,YES,
+chat_check_results,created_at,timestamp with time zone,,YES,now()
+companies,id,character varying,36,NO,gen_random_uuid()
+companies,name,text,,NO,
+companies,industry,text,,YES,'卫浴'::text
+companies,team_size,integer,,YES,1
+companies,contact_name,text,,YES,
+companies,contact_phone,text,,YES,
+companies,plan,text,,YES,'basic'::text
+companies,plan_expires_at,timestamp with time zone,,YES,
+companies,ai_credits_remaining,integer,,YES,3
+companies,service_level,text,,YES,'self'::text
+companies,status,text,,YES,'active'::text
+companies,created_at,timestamp with time zone,,NO,now()
+companies,updated_at,timestamp with time zone,,YES,now()
+companies,plan_start,timestamp with time zone,,YES,
+companies,plan_end,timestamp with time zone,,YES,
+companies,plan_period,text,,YES,'monthly'::text
+companies,brand_name,text,,YES,
+companies,categories,text,,YES,'[]'::text
+companies,price_range,text,,YES,
+companies,platforms,text,,YES,'[]'::text
+companies,daily_consultations,text,,YES,
+companies,pain_points,text,,YES,'[]'::text
+companies,supply_type,text,,YES,
+companies,install_service,boolean,,YES,false
+companies,return_policy,text,,YES,
+companies,profile_completed,boolean,,YES,false
+companies,seat_limit,integer,,YES,1
+companies,seat_used,integer,,YES,1
+companies,trial_end_at,timestamp with time zone,,YES,
+cost_alert_reviews,id,character varying,36,NO,(gen_random_uuid())::text
+cost_alert_reviews,company_id,character varying,36,NO,
+cost_alert_reviews,alert_date,date,,NO,
+cost_alert_reviews,reason_category,text,,NO,
+cost_alert_reviews,reason_desc,text,,YES,
+cost_alert_reviews,prevention,text,,YES,
+cost_alert_reviews,created_by,character varying,36,YES,
+cost_alert_reviews,created_at,timestamp with time zone,,YES,now()
+cost_baselines,id,character varying,36,NO,(gen_random_uuid())::text
+cost_baselines,company_id,character varying,36,NO,
+cost_baselines,baseline_compensation_rate,numeric,,YES,
+cost_baselines,baseline_refund_rate,numeric,,YES,
+cost_baselines,baseline_response_time,numeric,,YES,
+cost_baselines,baseline_satisfaction,numeric,,YES,
+cost_baselines,system_fee,numeric,,YES,299
+cost_baselines,recorded_at,timestamp with time zone,,YES,now()
+cost_baselines,updated_at,timestamp with time zone,,YES,now()
+cost_records,id,character varying,36,NO,gen_random_uuid()
+cost_records,company_id,character varying,36,NO,
+cost_records,record_date,date,,NO,
+cost_records,total_cost,numeric,,NO,
+cost_records,work_order_count,integer,,YES,
+cost_records,refund_count,integer,,YES,
+cost_records,note,text,,YES,
+cost_records,created_by,character varying,36,YES,
+cost_records,created_at,timestamp with time zone,,NO,now()
+course_highlights,id,uuid,,NO,gen_random_uuid()
+course_highlights,user_id,character varying,36,NO,
+course_highlights,company_id,character varying,36,YES,
+course_highlights,course_id,character varying,20,NO,
+course_highlights,highlighted_text,text,,NO,
+course_highlights,page_path,character varying,100,YES,
+course_highlights,created_at,timestamp with time zone,,YES,now()
+course_lessons,id,uuid,,NO,gen_random_uuid()
+course_lessons,stage,integer,,NO,
+course_lessons,lesson_number,integer,,NO,
+course_lessons,title,text,,NO,
+course_lessons,core_content,text,,NO,''::text
+course_lessons,learning_outcome,text,,NO,''::text
+course_lessons,exercise,text,,NO,''::text
+course_lessons,template,text,,NO,''::text
+course_lessons,duration_minutes,integer,,NO,5
+course_lessons,is_published,boolean,,YES,true
+course_lessons,sort_order,integer,,NO,0
+course_lessons,created_at,timestamp with time zone,,YES,now()
+course_lessons,video_url,character varying,500,NO,''::character varying
+course_lessons,video_duration,character varying,20,NO,''::character varying
+course_progress,id,uuid,,NO,gen_random_uuid()
+course_progress,company_id,character varying,36,YES,
+course_progress,user_id,character varying,36,NO,
+course_progress,lesson_id,uuid,,NO,
+course_progress,status,text,,NO,'not_started'::text
+course_progress,started_at,timestamp with time zone,,YES,
+course_progress,completed_at,timestamp with time zone,,YES,
+course_progress,created_at,timestamp with time zone,,NO,now()
+course_progress,updated_at,timestamp with time zone,,YES,now()
+courses,id,character varying,36,NO,gen_random_uuid()
+courses,company_id,character varying,36,YES,
+courses,title,text,,NO,
+courses,category,character varying,50,YES,
+courses,description,text,,YES,
+courses,content,text,,YES,'[]'::text
+courses,is_preset,boolean,,YES,true
+courses,sort_order,integer,,YES,0
+courses,created_at,timestamp with time zone,,NO,now()
+courses,updated_at,timestamp with time zone,,YES,now()
+courses,feishu_doc_url,text,,YES,
+custom_knowledge,id,character varying,36,NO,gen_random_uuid()
+custom_knowledge,company_id,character varying,36,NO,
+custom_knowledge,title,character varying,200,NO,
+custom_knowledge,content,text,,NO,
+custom_knowledge,category,character varying,50,NO,'other'::character varying
+custom_knowledge,is_active,boolean,,YES,true
+custom_knowledge,created_by,character varying,36,YES,
+custom_knowledge,created_at,timestamp with time zone,,NO,now()
+custom_knowledge,updated_at,timestamp with time zone,,YES,now()
+custom_training_content,id,character varying,36,NO,(gen_random_uuid())::text
+custom_training_content,company_id,character varying,36,NO,
+custom_training_content,module_key,character varying,50,NO,
+custom_training_content,section_index,integer,,NO,0
+custom_training_content,item_index,integer,,NO,0
+custom_training_content,custom_title,text,,YES,
+custom_training_content,custom_content,text,,YES,
+custom_training_content,source,character varying,20,NO,'merchant'::character varying
+custom_training_content,merchant_source,character varying,36,YES,
+custom_training_content,is_deleted,boolean,,NO,false
+custom_training_content,created_at,timestamp with time zone,,NO,now()
+custom_training_content,updated_at,timestamp with time zone,,NO,now()
+custom_training_content,review_status,character varying,20,YES,'none'::character varying
+custom_training_content,reviewed_at,timestamp with time zone,,YES,
+customer_records,id,character varying,36,NO,gen_random_uuid()
+customer_records,company_id,character varying,36,YES,
+customer_records,user_id,character varying,36,YES,
+customer_records,customer_name,character varying,100,YES,
+customer_records,customer_phone,character varying,20,YES,
+customer_records,customer_type,character varying,10,YES,'C端'::character varying
+customer_records,source,character varying,20,YES,'电商平台'::character varying
+customer_records,status,character varying,10,YES,'未服务'::character varying
+customer_records,notes,text,,YES,
+customer_records,last_query,text,,YES,
+customer_records,last_query_at,timestamp without time zone,,YES,
+customer_records,service_count,integer,,YES,0
+customer_records,created_at,timestamp without time zone,,YES,now()
+customer_records,updated_at,timestamp without time zone,,YES,now()
+customer_records,source_platform,character varying,20,YES,'other'::character varying
+customer_records,risk_tags,jsonb,,YES,'[]'::jsonb
+customer_records,product_model,character varying,100,YES,''::character varying
+customer_records,water_pressure,character varying,20,YES,'normal'::character varying
+customer_records,platform_id,character varying,100,YES,''::character varying
+customer_records,pit_distance,character varying,10,YES,'unknown'::character varying
+customer_records,related_order_id,character varying,100,YES,''::character varying
+customer_records,follow_up_summary,text,,YES,''::text
+customer_records,order_type,character varying,,YES,''::character varying
+customer_records,sub_type,character varying,,YES,''::character varying
+customer_records,progress,character varying,,YES,''::character varying
+customer_records,assignee_id,character varying,,YES,''::character varying
+customer_records,assign_status,character varying,,YES,'未分配'::character varying
+customer_records,promised_deadline,timestamp without time zone,,YES,
+customer_records,completed_at,timestamp without time zone,,YES,
+customer_records,first_response_at,timestamp without time zone,,YES,
+customer_records,customer_demand,character varying,,YES,''::character varying
+customer_records,final_solution,character varying,,YES,''::character varying
+customer_records,closure_result,character varying,,YES,''::character varying
+customer_records,created_by,character varying,36,YES,''::character varying
+customer_records,tags,jsonb,,YES,'[]'::jsonb
+customer_records,actual_water_pressure,character varying,20,YES,''::character varying
+customer_records,evidence_urls,jsonb,,YES,'[]'::jsonb
+customer_records,compensation_amount,numeric,,YES,0
+customer_records,replacement_parts,jsonb,,YES,'[]'::jsonb
+customer_records,installer_name,character varying,50,YES,''::character varying
+customer_records,house_pit_distance,character varying,20,YES,''::character varying
+customer_records,house_water_pressure,character varying,30,YES,''::character varying
+customer_records,install_scenario,character varying,30,YES,''::character varying
+customer_records,purchase_intent,character varying,20,YES,''::character varying
+customer_records,responsibility,character varying,20,YES,''::character varying
+customer_records,is_staff_caused,boolean,,YES,false
+daily_practice,id,uuid,,NO,gen_random_uuid()
+daily_practice,user_id,character varying,36,NO,
+daily_practice,lesson_number,character varying,10,NO,
+daily_practice,question_type,character varying,20,NO,'scenario'::character varying
+daily_practice,question,text,,NO,
+daily_practice,options,jsonb,,YES,
+daily_practice,user_answer,text,,YES,
+daily_practice,created_at,timestamp with time zone,,NO,now()
+daily_practice,is_correct,boolean,,YES,
+daily_practice,ai_feedback,text,,YES,
+daily_reports,id,character varying,36,NO,gen_random_uuid()
+daily_reports,report_date,date,,NO,
+daily_reports,type,character varying,20,NO,
+daily_reports,title,text,,NO,
+daily_reports,summary,text,,YES,
+daily_reports,action_individual,text,,YES,
+daily_reports,action_staff,text,,YES,
+daily_reports,action_admin,text,,YES,
+daily_reports,created_at,timestamp with time zone,,NO,now()
+exam_records,id,character varying,36,NO,gen_random_uuid()
+exam_records,user_id,character varying,36,NO,
+exam_records,score,integer,,NO,
+exam_records,answers,text,,YES,'[]'::text
+exam_records,passed,boolean,,YES,false
+exam_records,created_at,timestamp with time zone,,NO,now()
+finance_records,id,character varying,36,NO,gen_random_uuid()
+finance_records,customer_name,character varying,100,NO,
+finance_records,customer_phone,character varying,20,YES,
+finance_records,plan,character varying,20,NO,
+finance_records,amount,numeric,,NO,0
+finance_records,payment_method,character varying,20,NO,'wechat'::character varying
+finance_records,start_date,date,,YES,
+finance_records,end_date,date,,YES,
+finance_records,account_status,character varying,20,YES,'active'::character varying
+finance_records,remark,text,,YES,''::text
+finance_records,created_by,character varying,36,YES,
+finance_records,created_at,timestamp with time zone,,NO,now()
+finance_records,updated_at,timestamp with time zone,,YES,now()
+health_check,id,integer,,NO,nextval('health_check_id_seq'::regclass)
+health_check,updated_at,timestamp with time zone,,YES,now()
+incentive_records,id,character varying,36,NO,(gen_random_uuid())::text
+incentive_records,company_id,character varying,36,NO,
+incentive_records,user_id,character varying,36,NO,
+incentive_records,agent_id,character varying,36,YES,
+incentive_records,rule_id,character varying,36,YES,
+incentive_records,action,character varying,100,NO,
+incentive_records,points,integer,,NO,0
+incentive_records,note,text,,YES,
+incentive_records,created_by,character varying,36,YES,
+incentive_records,created_at,timestamp with time zone,,YES,now()
+incentive_redemptions,id,character varying,36,NO,(gen_random_uuid())::text
+incentive_redemptions,company_id,character varying,36,NO,
+incentive_redemptions,name,character varying,200,NO,
+incentive_redemptions,points_required,integer,,NO,
+incentive_redemptions,description,text,,YES,
+incentive_redemptions,is_active,boolean,,YES,true
+incentive_redemptions,created_at,timestamp with time zone,,YES,now()
+incentive_rules,id,character varying,36,NO,(gen_random_uuid())::text
+incentive_rules,company_id,character varying,36,NO,
+incentive_rules,action,character varying,100,NO,
+incentive_rules,points,integer,,NO,1
+incentive_rules,is_active,boolean,,YES,true
+incentive_rules,created_at,timestamp with time zone,,YES,now()
+industry_knowledge,id,character varying,36,NO,(gen_random_uuid())::text
+industry_knowledge,source_user_id,character varying,36,NO,
+industry_knowledge,source_company_id,character varying,36,YES,
+industry_knowledge,category,character varying,50,NO,
+industry_knowledge,title,character varying,200,NO,
+industry_knowledge,content,text,,NO,
+industry_knowledge,tags,ARRAY,,YES,'{}'::text[]
+industry_knowledge,usage_count,integer,,YES,0
+industry_knowledge,like_count,integer,,YES,0
+industry_knowledge,status,character varying,20,YES,'approved'::character varying
+industry_knowledge,created_at,timestamp with time zone,,YES,now()
+industry_trends,id,character varying,36,NO,(gen_random_uuid())::text
+industry_trends,company_id,character varying,36,YES,
+industry_trends,category,character varying,20,NO,
+industry_trends,trend,character varying,10,NO,
+industry_trends,title,character varying,200,NO,
+industry_trends,key_data,text,,YES,
+industry_trends,advice,text,,YES,
+industry_trends,advice_detail,text,,YES,
+industry_trends,data_source,character varying,100,YES,
+industry_trends,is_active,boolean,,YES,true
+industry_trends,created_at,timestamp with time zone,,YES,now()
+industry_trends,updated_at,timestamp with time zone,,YES,now()
+insight_notifications,id,character varying,36,NO,(gen_random_uuid())::text
+insight_notifications,company_id,character varying,36,NO,
+insight_notifications,user_id,character varying,36,YES,
+insight_notifications,insight_type,character varying,30,NO,
+insight_notifications,title,character varying,200,NO,
+insight_notifications,summary,text,,NO,
+insight_notifications,detail,jsonb,,YES,'{}'::jsonb
+insight_notifications,priority,character varying,10,YES,'normal'::character varying
+insight_notifications,is_read,boolean,,YES,false
+insight_notifications,created_at,timestamp with time zone,,YES,now()
+insights,id,uuid,,NO,gen_random_uuid()
+insights,company_id,uuid,,NO,
+insights,user_id,uuid,,YES,
+insights,type,character varying,20,NO,
+insights,severity,character varying,10,NO,
+insights,title,character varying,200,NO,
+insights,content,text,,NO,
+insights,recommendation,text,,NO,
+insights,related_route,character varying,200,YES,NULL::character varying
+insights,related_course_id,integer,,YES,
+insights,is_read,boolean,,YES,false
+insights,created_at,timestamp with time zone,,YES,now()
+invitations,id,character varying,36,NO,(gen_random_uuid())::text
+invitations,company_id,character varying,36,NO,
+invitations,inviter_id,character varying,36,NO,
+invitations,phone,character varying,20,YES,
+invitations,email,character varying,200,YES,
+invitations,token,character varying,64,NO,
+invitations,role,character varying,20,YES,'staff'::character varying
+invitations,status,character varying,20,YES,'pending'::character varying
+invitations,used_by,character varying,36,YES,
+invitations,used_at,timestamp with time zone,,YES,
+invitations,expires_at,timestamp with time zone,,YES,
+invitations,created_at,timestamp with time zone,,YES,now()
+item_enhancements,id,character varying,36,NO,(gen_random_uuid())::text
+item_enhancements,company_id,character varying,36,NO,
+item_enhancements,module_key,text,,NO,
+item_enhancements,section_index,integer,,NO,
+item_enhancements,item_index,integer,,NO,
+item_enhancements,quick_phrase,text,,YES,
+item_enhancements,images,jsonb,,YES,'[]'::jsonb
+item_enhancements,source,text,,YES,'merchant'::text
+item_enhancements,review_status,text,,YES,'none'::text
+item_enhancements,reviewed_at,timestamp with time zone,,YES,
+item_enhancements,is_deleted,boolean,,YES,false
+item_enhancements,created_at,timestamp with time zone,,YES,now()
+item_enhancements,updated_at,timestamp with time zone,,YES,now()
+item_enhancements,custom_meaning,text,,YES,
+item_enhancements,custom_title,text,,YES,
+item_enhancements,is_hidden,boolean,,YES,false
+item_feedback,id,character varying,36,NO,(gen_random_uuid())::text
+item_feedback,user_id,character varying,36,NO,
+item_feedback,company_id,character varying,36,NO,
+item_feedback,module_key,text,,NO,
+item_feedback,section_index,integer,,NO,
+item_feedback,item_index,integer,,NO,
+item_feedback,feedback_type,text,,NO,
+item_feedback,created_at,timestamp with time zone,,YES,now()
+keyword_alert_configs,id,character varying,36,NO,(gen_random_uuid())::text
+keyword_alert_configs,company_id,character varying,36,NO,
+keyword_alert_configs,keyword,character varying,100,NO,
+keyword_alert_configs,category,character varying,50,YES,'敏感词'::character varying
+keyword_alert_configs,alert_level,character varying,20,YES,'warning'::character varying
+keyword_alert_configs,is_active,boolean,,YES,true
+keyword_alert_configs,created_at,timestamp with time zone,,YES,now()
+keyword_alert_records,id,character varying,36,NO,(gen_random_uuid())::text
+keyword_alert_records,company_id,character varying,36,NO,
+keyword_alert_records,config_id,character varying,36,YES,
+keyword_alert_records,keyword,character varying,100,NO,
+keyword_alert_records,matched_text,text,,YES,
+keyword_alert_records,agent_id,character varying,36,YES,
+keyword_alert_records,agent_name,character varying,100,YES,
+keyword_alert_records,alert_level,character varying,20,YES,'warning'::character varying
+keyword_alert_records,is_resolved,boolean,,YES,false
+keyword_alert_records,created_at,timestamp with time zone,,YES,now()
+knowledge_notes,id,character varying,36,NO,(gen_random_uuid())::text
+knowledge_notes,user_id,character varying,36,NO,
+knowledge_notes,company_id,character varying,36,YES,
+knowledge_notes,title,character varying,200,NO,''::character varying
+knowledge_notes,content,text,,NO,''::text
+knowledge_notes,category,character varying,50,YES,'知识笔记'::character varying
+knowledge_notes,created_at,timestamp with time zone,,YES,now()
+knowledge_notes,updated_at,timestamp with time zone,,YES,now()
+knowledge_update_reminders,id,character varying,36,NO,(gen_random_uuid())::text
+knowledge_update_reminders,company_id,character varying,36,NO,
+knowledge_update_reminders,frequency,character varying,20,YES,'biweekly'::character varying
+knowledge_update_reminders,last_check_at,timestamp with time zone,,YES,
+knowledge_update_reminders,next_remind_at,timestamp with time zone,,YES,
+knowledge_update_reminders,is_active,boolean,,YES,true
+knowledge_update_reminders,created_at,timestamp with time zone,,YES,now()
+knowledge_update_reminders,updated_at,timestamp with time zone,,YES,now()
+kpi_plans,id,character varying,36,NO,gen_random_uuid()
+kpi_plans,company_id,character varying,36,NO,
+kpi_plans,name,character varying,100,NO,
+kpi_plans,team_size,integer,,YES,
+kpi_plans,presale_ratio,integer,,YES,50
+kpi_plans,aftersale_ratio,integer,,YES,50
+kpi_plans,daily_orders,integer,,YES,
+kpi_plans,team_stage,character varying,20,YES,
+kpi_plans,focus,text,,YES,'[]'::text
+kpi_plans,metrics,text,,YES,'[]'::text
+kpi_plans,created_by,character varying,36,YES,
+kpi_plans,created_at,timestamp with time zone,,NO,now()
+kpi_plans,updated_at,timestamp with time zone,,YES,now()
+kpi_plans,is_active,boolean,,YES,false
+kpi_records,id,character varying,36,NO,gen_random_uuid()
+kpi_records,company_id,character varying,36,NO,
+kpi_records,agent_id,character varying,36,YES,
+kpi_records,metric_name,character varying,100,NO,
+kpi_records,score,integer,,YES,
+kpi_records,max_score,integer,,YES,5
+kpi_records,period,character varying,20,YES,
+kpi_records,recorded_by,character varying,36,YES,
+kpi_records,created_at,timestamp with time zone,,NO,now()
+kpi_records,metrics_data,jsonb,,YES,
+kpi_records,record_date,date,,YES,
+learning_records,id,character varying,36,NO,gen_random_uuid()
+learning_records,user_id,character varying,36,NO,
+learning_records,course_id,character varying,36,NO,
+learning_records,progress,integer,,YES,0
+learning_records,completed,boolean,,YES,false
+learning_records,completed_at,timestamp with time zone,,YES,
+learning_records,created_at,timestamp with time zone,,NO,now()
+learning_records,updated_at,timestamp with time zone,,YES,now()
+lesson_feedback,id,uuid,,NO,gen_random_uuid()
+lesson_feedback,user_id,character varying,36,NO,
+lesson_feedback,lesson_id,character varying,50,NO,
+lesson_feedback,course_id,character varying,50,YES,
+lesson_feedback,note_id,character varying,50,YES,
+lesson_feedback,understood,boolean,,NO,
+lesson_feedback,reason,text,,YES,
+lesson_feedback,feedback_status,character varying,20,YES,'completed'::character varying
+lesson_feedback,created_at,timestamp with time zone,,YES,now()
+management_plans,id,character varying,36,NO,(gen_random_uuid())::text
+management_plans,company_id,character varying,36,NO,
+management_plans,user_id,character varying,36,NO,
+management_plans,scripts_framework,text,,YES,
+management_plans,scripts_ai_optimized,text,,YES,
+management_plans,scripts_completed,boolean,,YES,false
+management_plans,kpi_plan,text,,YES,
+management_plans,kpi_ai_optimized,text,,YES,
+management_plans,kpi_completed,boolean,,YES,false
+management_plans,scheduling_rules,text,,YES,
+management_plans,scheduling_ai_optimized,text,,YES,
+management_plans,scheduling_completed,boolean,,YES,false
+management_plans,quality_standards,text,,YES,
+management_plans,quality_ai_optimized,text,,YES,
+management_plans,quality_completed,boolean,,YES,false
+management_plans,sop_checklist,text,,YES,
+management_plans,sop_ai_optimized,text,,YES,
+management_plans,progress,integer,,YES,0
+management_plans,is_graduated,boolean,,YES,false
+management_plans,graduated_at,timestamp with time zone,,YES,
+management_plans,generated_doc,text,,YES,
+management_plans,created_at,timestamp with time zone,,YES,now()
+management_plans,updated_at,timestamp with time zone,,YES,now()
+management_plans,sop_completed,boolean,,YES,false
+monthly_reports,id,character varying,36,NO,(gen_random_uuid())::text
+monthly_reports,company_id,character varying,36,NO,
+monthly_reports,user_id,character varying,36,YES,
+monthly_reports,report_month,character varying,7,NO,
+monthly_reports,summary,jsonb,,NO,'{}'::jsonb
+monthly_reports,created_at,timestamp with time zone,,YES,now()
+monthly_totals,id,uuid,,NO,gen_random_uuid()
+monthly_totals,company_id,character varying,,NO,
+monthly_totals,year_month,character varying,7,NO,
+monthly_totals,income_total,numeric,,NO,0
+monthly_totals,expense_total,numeric,,NO,0
+monthly_totals,created_at,timestamp with time zone,,NO,now()
+newbie_training_progress,id,character varying,36,NO,(gen_random_uuid())::text
+newbie_training_progress,company_id,character varying,36,NO,
+newbie_training_progress,user_id,character varying,36,NO,
+newbie_training_progress,module_id,character varying,50,NO,
+newbie_training_progress,status,character varying,20,NO,'not_started'::character varying
+newbie_training_progress,started_at,timestamp with time zone,,YES,
+newbie_training_progress,completed_at,timestamp with time zone,,YES,
+newbie_training_progress,updated_at,timestamp with time zone,,YES,now()
+notification_feedback,id,uuid,,NO,gen_random_uuid()
+notification_feedback,user_id,uuid,,NO,
+notification_feedback,notification_id,uuid,,NO,
+notification_feedback,helpful,boolean,,NO,
+notification_feedback,created_at,timestamp with time zone,,YES,now()
+notifications,id,character varying,36,NO,gen_random_uuid()
+notifications,company_id,character varying,36,YES,
+notifications,user_id,character varying,36,YES,
+notifications,type,character varying,50,NO,
+notifications,title,text,,NO,
+notifications,content,text,,YES,
+notifications,is_read,boolean,,YES,false
+notifications,created_at,timestamp with time zone,,NO,now()
+notifications,platform,text,,YES,
+notifications,summary,text,,YES,
+onboarding_progress,id,uuid,,NO,gen_random_uuid()
+onboarding_progress,company_id,character varying,36,NO,
+onboarding_progress,user_id,character varying,36,NO,
+onboarding_progress,day_number,integer,,NO,
+onboarding_progress,status,text,,NO,'pending'::text
+onboarding_progress,completed_at,timestamp with time zone,,YES,
+onboarding_progress,notes,text,,YES,
+onboarding_progress,created_at,timestamp with time zone,,NO,now()
+onboarding_progress,updated_at,timestamp with time zone,,YES,now()
+onboarding_records,id,character varying,36,NO,gen_random_uuid()
+onboarding_records,company_id,character varying,36,YES,
+onboarding_records,user_id,character varying,36,NO,
+onboarding_records,agent_id,character varying,36,YES,
+onboarding_records,step1_status,character varying,20,YES,'待分配'::character varying
+onboarding_records,step2_status,character varying,20,YES,'未开始'::character varying
+onboarding_records,step3_status,character varying,20,YES,'未开始'::character varying
+onboarding_records,step4_status,character varying,20,YES,'未开始'::character varying
+onboarding_records,created_at,timestamp with time zone,,NO,now()
+onboarding_records,updated_at,timestamp with time zone,,YES,now()
+onboarding_tasks,id,uuid,,NO,gen_random_uuid()
+onboarding_tasks,day_number,integer,,NO,
+onboarding_tasks,title,text,,NO,
+onboarding_tasks,description,text,,NO,
+onboarding_tasks,core_task,text,,NO,
+onboarding_tasks,operation_guide,text,,NO,
+onboarding_tasks,acceptance_criteria,text,,NO,
+onboarding_tasks,related_route,text,,YES,
+onboarding_tasks,created_at,timestamp with time zone,,YES,now()
+orders,id,character varying,36,NO,gen_random_uuid()
+orders,company_id,character varying,36,NO,
+orders,user_id,character varying,36,YES,
+orders,plan,character varying,20,NO,
+orders,period,character varying,20,NO,
+orders,amount,numeric,,NO,
+orders,credits,integer,,NO,0
+orders,status,character varying,20,YES,'pending'::character varying
+orders,payment_method,character varying,50,YES,
+orders,remark,text,,YES,
+orders,created_at,timestamp with time zone,,NO,now()
+orders,updated_at,timestamp with time zone,,YES,now()
+payment_orders,id,character varying,36,NO,(gen_random_uuid())::text
+payment_orders,company_id,character varying,36,NO,
+payment_orders,user_id,character varying,36,NO,
+payment_orders,order_no,character varying,64,NO,
+payment_orders,plan,character varying,20,NO,
+payment_orders,amount,numeric,,NO,
+payment_orders,period,character varying,20,NO,'monthly'::character varying
+payment_orders,payment_method,character varying,20,YES,
+payment_orders,screenshot_url,text,,YES,
+payment_orders,status,character varying,20,YES,'pending'::character varying
+payment_orders,remark,text,,YES,
+payment_orders,confirmed_by,character varying,36,YES,
+payment_orders,confirmed_at,timestamp with time zone,,YES,
+payment_orders,created_at,timestamp with time zone,,YES,now()
+personal_data_records,id,character varying,36,NO,(gen_random_uuid())::text
+personal_data_records,user_id,character varying,36,NO,
+personal_data_records,record_date,date,,NO,
+personal_data_records,visits,integer,,YES,0
+personal_data_records,avg_response_time,double precision,,YES,0
+personal_data_records,consultations,integer,,YES,0
+personal_data_records,orders,integer,,YES,0
+personal_data_records,complaints,integer,,YES,0
+personal_data_records,conversion_rate,double precision,,YES,0
+personal_data_records,complaint_rate,double precision,,YES,0
+personal_data_records,mom_change,double precision,,YES,0
+personal_data_records,notes,text,,YES,
+personal_data_records,created_at,timestamp with time zone,,YES,now()
+personal_data_records,target_visits,integer,,YES,
+personal_data_records,target_response_time,double precision,,YES,
+personal_data_records,target_consultations,integer,,YES,
+personal_data_records,target_orders,integer,,YES,
+personal_data_records,target_complaints,integer,,YES,
+personal_data_records,target_conversion_rate,double precision,,YES,
+personal_feature_trials,id,character varying,36,NO,(gen_random_uuid())::text
+personal_feature_trials,user_id,character varying,36,NO,
+personal_feature_trials,feature,character varying,50,NO,
+personal_feature_trials,used_count,integer,,YES,0
+personal_feature_trials,created_at,timestamp with time zone,,YES,now()
+personal_learning_progress,id,uuid,,NO,gen_random_uuid()
+personal_learning_progress,user_id,uuid,,NO,
+personal_learning_progress,lesson_id,character varying,50,NO,
+personal_learning_progress,learned,boolean,,NO,true
+personal_learning_progress,learned_at,timestamp with time zone,,NO,now()
+personal_reports,id,character varying,36,NO,(gen_random_uuid())::text
+personal_reports,user_id,character varying,36,NO,
+personal_reports,report_type,character varying,10,NO,
+personal_reports,period,character varying,20,NO,
+personal_reports,title,character varying,200,NO,
+personal_reports,content,text,,NO,
+personal_reports,has_cda,boolean,,YES,false
+personal_reports,created_at,timestamp with time zone,,YES,now()
+phrase_library,id,character varying,36,NO,gen_random_uuid()
+phrase_library,company_id,character varying,36,YES,
+phrase_library,category,character varying,50,NO,
+phrase_library,content,text,,NO,
+phrase_library,is_preset,boolean,,YES,true
+phrase_library,use_count,integer,,YES,0
+phrase_library,created_by,character varying,36,YES,
+phrase_library,created_at,timestamp with time zone,,NO,now()
+phrase_library,updated_at,timestamp with time zone,,YES,now()
+phrase_library,is_case,boolean,,YES,false
+phrase_library,source_id,character varying,36,YES,
+phrase_library,scene,text,,YES,
+phrase_library,question,text,,YES,
+phrase_library,answer,text,,YES,
+phrase_library,tags,text,,YES,
+phrase_library,review_status,character varying,20,YES,'待审核'::character varying
+phrase_library,review_note,text,,YES,
+phrase_library,reviewed_at,timestamp with time zone,,YES,
+phrase_library,reviewed_by,character varying,36,YES,
+phrase_library,expires_at,timestamp with time zone,,YES,
+phrase_library,freshness_status,character varying,20,YES,'normal'::character varying
+practical_tasks,id,uuid,,NO,gen_random_uuid()
+practical_tasks,user_id,character varying,36,NO,
+practical_tasks,lesson_number,character varying,10,NO,
+practical_tasks,task_type,character varying,20,NO,'text_input'::character varying
+practical_tasks,task_content,text,,NO,
+practical_tasks,user_submission,text,,YES,
+practical_tasks,ai_score,integer,,YES,
+practical_tasks,ai_feedback,text,,YES,
+practical_tasks,submitted_at,timestamp with time zone,,YES,
+problem_solutions,id,character varying,36,NO,gen_random_uuid()
+problem_solutions,company_id,character varying,36,NO,
+problem_solutions,user_id,character varying,36,NO,
+problem_solutions,query,text,,NO,
+problem_solutions,category,character varying,50,YES,
+problem_solutions,judgment,text,,YES,
+problem_solutions,steps,text,,YES,
+problem_solutions,script,text,,YES,
+problem_solutions,solution_used,boolean,,YES,false
+problem_solutions,created_at,timestamp with time zone,,NO,now()
+problem_solutions,diagnosis_type,text,,YES,
+problem_solutions,ai_solution,text,,YES,
+problem_solutions,is_helpful,boolean,,YES,false
+problem_solutions,problem_desc,text,,YES,
+problem_solutions,is_marked_as_case,boolean,,YES,false
+problem_solutions,is_visible,boolean,,YES,true
+problem_solutions,marked_at,timestamp with time zone,,YES,
+problem_solutions,case_tags,text,,YES,
+problem_solutions,customer_feedback,text,,YES,
+problem_solutions,script_id,character varying,36,YES,
+product_profiles,id,character varying,36,NO,(gen_random_uuid())::text
+product_profiles,user_id,character varying,36,NO,
+product_profiles,company_id,character varying,36,YES,
+product_profiles,product_name,text,,NO,
+product_profiles,category,text,,YES,
+product_profiles,brand,text,,YES,
+product_profiles,model,text,,YES,
+product_profiles,specifications,jsonb,,YES,'{}'::jsonb
+product_profiles,features,jsonb,,YES,'[]'::jsonb
+product_profiles,faq,jsonb,,YES,'[]'::jsonb
+product_profiles,selling_points,jsonb,,YES,'[]'::jsonb
+product_profiles,notes,text,,YES,
+product_profiles,created_at,timestamp with time zone,,YES,now()
+product_profiles,updated_at,timestamp with time zone,,YES,now()
+product_profit_records,id,character varying,36,NO,(gen_random_uuid())::text
+product_profit_records,company_id,character varying,36,NO,
+product_profit_records,product_name,character varying,200,NO,
+product_profit_records,sku,character varying,100,YES,
+product_profit_records,sell_price,numeric,,YES,0
+product_profit_records,cost_price,numeric,,YES,0
+product_profit_records,after_sale_loss,numeric,,YES,0
+product_profit_records,net_profit,numeric,,YES,0
+product_profit_records,profit_level,character varying,20,YES,'保本'::character varying
+product_profit_records,refund_count,integer,,YES,0
+product_profit_records,refund_rate,numeric,,YES,0
+product_profit_records,created_at,timestamp with time zone,,YES,now()
+product_profit_records,updated_at,timestamp with time zone,,YES,now()
+quality_feedbacks,id,uuid,,NO,gen_random_uuid()
+quality_feedbacks,company_id,character varying,36,YES,
+quality_feedbacks,from_user_id,character varying,36,NO,
+quality_feedbacks,to_user_id,character varying,36,NO,
+quality_feedbacks,quality_check_id,character varying,,YES,
+quality_feedbacks,issue_type,character varying,,NO,
+quality_feedbacks,issue_description,text,,YES,
+quality_feedbacks,suggestion,text,,YES,
+quality_feedbacks,status,character varying,,YES,'pending'::character varying
+quality_feedbacks,confirmed_at,timestamp with time zone,,YES,
+quality_feedbacks,resolved_at,timestamp with time zone,,YES,
+quality_feedbacks,created_at,timestamp with time zone,,YES,now()
+quality_inspections,id,character varying,36,NO,gen_random_uuid()
+quality_inspections,company_id,character varying,36,YES,
+quality_inspections,inspector_id,uuid,,YES,
+quality_inspections,staff_id,uuid,,YES,
+quality_inspections,problem_solution_id,uuid,,YES,
+quality_inspections,response_score,integer,,YES,0
+quality_inspections,script_score,integer,,YES,0
+quality_inspections,attitude_score,integer,,YES,0
+quality_inspections,process_score,integer,,YES,0
+quality_inspections,resolution_score,integer,,YES,0
+quality_inspections,total_score,integer,,YES,
+quality_inspections,comment,text,,YES,
+quality_inspections,created_at,timestamp without time zone,,YES,now()
+recharge_logs,id,character varying,36,NO,gen_random_uuid()
+recharge_logs,company_id,character varying,36,NO,
+recharge_logs,user_id,character varying,36,YES,
+recharge_logs,user_name,character varying,100,YES,
+recharge_logs,plan,character varying,20,NO,
+recharge_logs,period,character varying,20,NO,
+recharge_logs,amount,numeric,,YES,
+recharge_logs,operator_id,character varying,36,YES,
+recharge_logs,operator_name,character varying,100,YES,
+recharge_logs,remark,text,,YES,
+recharge_logs,created_at,timestamp with time zone,,NO,now()
+redemption_codes,id,uuid,,NO,gen_random_uuid()
+redemption_codes,code,character varying,20,NO,
+redemption_codes,plan_type,character varying,20,NO,'personal'::character varying
+redemption_codes,is_used,boolean,,YES,false
+redemption_codes,used_by,uuid,,YES,
+redemption_codes,used_at,timestamp with time zone,,YES,
+redemption_codes,created_by,uuid,,NO,
+redemption_codes,expires_at,timestamp with time zone,,NO,
+redemption_codes,created_at,timestamp with time zone,,YES,now()
+report_views,id,character varying,36,NO,gen_random_uuid()
+report_views,user_id,character varying,36,NO,
+report_views,report_id,character varying,36,NO,
+report_views,viewed_at,timestamp with time zone,,NO,now()
+reports,id,character varying,36,NO,(gen_random_uuid())::text
+reports,company_id,character varying,36,NO,
+reports,type,character varying,30,NO,
+reports,title,character varying,200,NO,
+reports,period_start,date,,NO,
+reports,period_end,date,,NO,
+reports,summary,text,,YES,
+reports,data,jsonb,,NO,
+reports,insights,jsonb,,YES,
+reports,created_at,timestamp with time zone,,YES,now()
+rule_updates,id,character varying,36,NO,(gen_random_uuid())::text
+rule_updates,company_id,character varying,36,YES,
+rule_updates,platform,character varying,20,NO,
+rule_updates,title,character varying,300,NO,
+rule_updates,summary,text,,YES,
+rule_updates,action_advice,text,,YES,
+rule_updates,effective_date,date,,YES,
+rule_updates,source_url,text,,YES,
+rule_updates,is_active,boolean,,YES,true
+rule_updates,created_at,timestamp with time zone,,YES,now()
+rule_updates,updated_at,timestamp with time zone,,YES,now()
+scripts,id,character varying,36,NO,gen_random_uuid()
+scripts,category,text,,NO,
+scripts,phenomenon,text,,NO,
+scripts,diagnosis,text,,NO,
+scripts,solution,text,,NO,
+scripts,detail,text,,YES,
+scripts,sort_order,integer,,YES,0
+scripts,created_at,timestamp with time zone,,NO,now()
+scripts,updated_at,timestamp with time zone,,YES,now()
+self_check_items,id,character varying,36,NO,(gen_random_uuid())::text
+self_check_items,company_id,character varying,36,NO,
+self_check_items,content,text,,NO,
+self_check_items,category,character varying,50,YES,'日常检查'::character varying
+self_check_items,is_preset,boolean,,YES,false
+self_check_items,sort_order,integer,,YES,0
+self_check_items,is_active,boolean,,YES,true
+self_check_items,created_at,timestamp with time zone,,YES,now()
+self_check_records,id,character varying,36,NO,(gen_random_uuid())::text
+self_check_records,company_id,character varying,36,NO,
+self_check_records,user_id,character varying,36,NO,
+self_check_records,check_date,date,,NO,
+self_check_records,results,jsonb,,YES,'[]'::jsonb
+self_check_records,total_items,integer,,YES,0
+self_check_records,passed_items,integer,,YES,0
+self_check_records,score,numeric,,YES,
+self_check_records,created_at,timestamp with time zone,,YES,now()
+self_check_reminders,id,character varying,36,NO,(gen_random_uuid())::text
+self_check_reminders,company_id,character varying,36,NO,
+self_check_reminders,frequency,character varying,20,YES,'weekly'::character varying
+self_check_reminders,reminder_day,integer,,YES,1
+self_check_reminders,is_active,boolean,,YES,true
+self_check_reminders,last_reminded_at,timestamp with time zone,,YES,
+self_check_reminders,created_at,timestamp with time zone,,YES,now()
+self_check_reminders,updated_at,timestamp with time zone,,YES,now()
+sop_templates,id,character varying,36,NO,gen_random_uuid()
+sop_templates,company_id,character varying,36,YES,
+sop_templates,category,text,,NO,
+sop_templates,name,text,,NO,
+sop_templates,scenario,text,,YES,
+sop_templates,steps_json,text,,YES,'[]'::text
+sop_templates,role,text,,YES,'售中客服'::text
+sop_templates,is_preset,boolean,,YES,false
+sop_templates,needs_update,boolean,,YES,false
+sop_templates,version,integer,,YES,1
+sop_templates,updated_by,text,,YES,
+sop_templates,created_at,timestamp with time zone,,NO,now()
+sop_templates,updated_at,timestamp with time zone,,YES,now()
+subscriptions,id,character varying,36,NO,gen_random_uuid()
+subscriptions,company_id,character varying,36,NO,
+subscriptions,plan,character varying,20,NO,'basic'::character varying
+subscriptions,plan_period,character varying,20,YES,'monthly'::character varying
+subscriptions,plan_start,date,,YES,
+subscriptions,plan_end,date,,YES,
+subscriptions,status,character varying,20,YES,'active'::character varying
+subscriptions,created_at,timestamp with time zone,,NO,now()
+subscriptions,updated_at,timestamp with time zone,,YES,now()
+teams,id,character varying,36,NO,(gen_random_uuid())::text
+teams,company_id,character varying,36,NO,
+teams,name,character varying,100,NO,
+teams,type,character varying,20,YES,'general'::character varying
+teams,leader_id,character varying,36,YES,
+teams,member_count,integer,,YES,0
+teams,status,character varying,20,YES,'active'::character varying
+teams,created_at,timestamp with time zone,,YES,now()
+teams,updated_at,timestamp with time zone,,YES,now()
+template_usage,id,uuid,,NO,gen_random_uuid()
+template_usage,template_id,text,,NO,
+template_usage,company_id,uuid,,NO,
+template_usage,user_id,uuid,,NO,
+template_usage,action,text,,NO,'copy'::text
+template_usage,created_at,timestamp with time zone,,YES,now()
+training_progress,id,character varying,36,NO,gen_random_uuid()
+training_progress,user_id,character varying,36,NO,
+training_progress,module_id,character varying,50,NO,
+training_progress,current_step,integer,,YES,0
+training_progress,completed,boolean,,YES,false
+training_progress,completed_at,timestamp with time zone,,YES,
+training_progress,created_at,timestamp with time zone,,NO,now()
+training_progress,updated_at,timestamp with time zone,,YES,now()
+user_course_progress,id,uuid,,NO,gen_random_uuid()
+user_course_progress,user_id,character varying,36,NO,
+user_course_progress,lesson_id,uuid,,NO,
+user_course_progress,status,text,,NO,'not_started'::character varying
+user_course_progress,completed_at,timestamp with time zone,,YES,
+user_course_progress,exercise_submitted,boolean,,YES,false
+user_course_progress,notes,text,,YES,''::text
+user_course_progress,created_at,timestamp with time zone,,YES,now()
+user_read_log,id,character varying,36,NO,(gen_random_uuid())::text
+user_read_log,user_id,character varying,36,NO,
+user_read_log,item_type,character varying,30,NO,
+user_read_log,item_id,character varying,36,NO,
+user_read_log,read_at,timestamp with time zone,,YES,now()
+user_scripts,id,uuid,,NO,gen_random_uuid()
+user_scripts,user_id,character varying,36,YES,
+user_scripts,company_id,character varying,36,YES,
+user_scripts,type,character varying,,NO,'speech'::character varying
+user_scripts,title,character varying,,NO,
+user_scripts,original_content,text,,YES,
+user_scripts,ai_result,text,,YES,
+user_scripts,tags,ARRAY,,YES,'{}'::text[]
+user_scripts,is_shared,boolean,,YES,false
+user_scripts,created_at,timestamp with time zone,,YES,now()
+user_stats,id,character varying,36,NO,(gen_random_uuid())::text
+user_stats,user_id,character varying,36,NO,
+user_stats,stat_type,character varying,50,NO,
+user_stats,stat_value,text,,NO,'0'::text
+user_stats,updated_at,timestamp with time zone,,YES,now()
+users,id,character varying,36,NO,gen_random_uuid()
+users,company_id,character varying,36,NO,
+users,email,text,,NO,
+users,password_hash,text,,NO,
+users,display_name,text,,YES,
+users,role,text,,YES,'agent'::text
+users,user_type,text,,YES,'small'::text
+users,ai_credits_remaining,integer,,YES,3
+users,status,text,,YES,'active'::text
+users,last_login_at,timestamp with time zone,,YES,
+users,created_at,timestamp with time zone,,NO,now()
+users,updated_at,timestamp with time zone,,YES,now()
+users,remaining_credits,integer,,YES,3
+users,industry,character varying,50,YES,NULL::character varying
+users,team_size,character varying,20,YES,NULL::character varying
+users,gender,character varying,10,YES,'保密'::character varying
+users,bio,text,,YES,''::text
+users,position,character varying,20,YES,NULL::character varying
+users,industry_profile_completed,boolean,,YES,false
+users,expires_at,timestamp with time zone,,YES,
+weekly_reports,id,character varying,36,NO,(gen_random_uuid())::text
+weekly_reports,company_id,character varying,36,NO,
+weekly_reports,week_start,date,,NO,
+weekly_reports,week_end,date,,NO,
+weekly_reports,total_loss,numeric,,YES,0
+weekly_reports,loss_change_percent,numeric,,YES,
+weekly_reports,anomaly_count,integer,,YES,0
+weekly_reports,anomaly_details,jsonb,,YES,'[]'::jsonb
+weekly_reports,ai_saving_minutes,integer,,YES,0
+weekly_reports,ai_usage_count,integer,,YES,0
+weekly_reports,suggestions,text,,YES,
+weekly_reports,is_read,boolean,,YES,false
+weekly_reports,created_at,timestamp with time zone,,YES,now()
+work_orders,id,character varying,36,NO,gen_random_uuid()
+work_orders,company_id,character varying,36,YES,
+work_orders,user_id,character varying,36,YES,
+work_orders,customer_name,character varying,100,YES,
+work_orders,customer_phone,character varying,20,YES,
+work_orders,query,text,,YES,
+work_orders,category,character varying,50,YES,
+work_orders,ai_judgment,text,,YES,
+work_orders,ai_script,text,,YES,
+work_orders,priority,character varying,10,YES,'普通'::character varying
+work_orders,status,character varying,10,YES,'待处理'::character varying
+work_orders,result,text,,YES,
+work_orders,source_type,character varying,20,YES,'ai_generate'::character varying
+work_orders,problem_solution_id,uuid,,YES,
+work_orders,created_at,timestamp without time zone,,YES,now()
+work_orders,completed_at,timestamp without time zone,,YES,
+work_orders,updated_at,timestamp without time zone,,YES,now()
+work_orders,order_no,character varying,100,YES,
+wrong_questions,id,uuid,,NO,gen_random_uuid()
+wrong_questions,user_id,character varying,36,NO,
+wrong_questions,lesson_number,character varying,10,NO,
+wrong_questions,question,text,,NO,
+wrong_questions,question_type,character varying,20,NO,'scenario'::character varying
+wrong_questions,options,text,,YES,
+wrong_questions,user_answer,text,,YES,
+wrong_questions,correct_answer,text,,YES,
+wrong_questions,ai_analysis,text,,YES,
+wrong_questions,reviewed,boolean,,NO,false
+wrong_questions,created_at,timestamp with time zone,,NO,now()

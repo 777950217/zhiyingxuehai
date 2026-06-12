@@ -1,0 +1,5 @@
+{
+  "buildCommand": "next build && node scripts/fix-middleware.js",
+  "installCommand": "pnpm install --production=false",
+  "framework": "nextjs"
+}

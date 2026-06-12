@@ -1,0 +1,756 @@
+{
+  "timestamp": "2026-06-07T06:08:18.689Z",
+  "summary": {
+    "total": 184,
+    "authenticated": 179,
+    "publicOk": 1,
+    "vulnerable": 1,
+    "falsePositive": 3
+  },
+  "details": {
+    "vulnerable": [
+      {
+        "apiPath": "/api/certificate/code",
+        "file": "src\\app\\(main)\\api\\certificate\\[code]\\route.ts"
+      }
+    ],
+    "falsePositive": [
+      {
+        "apiPath": "/api/auth/change-password",
+        "file": "src\\app\\(main)\\api\\auth\\change-password\\route.ts"
+      },
+      {
+        "apiPath": "/api/auth/reset-password",
+        "file": "src\\app\\(main)\\api\\auth\\reset-password\\route.ts"
+      },
+      {
+        "apiPath": "/api/health-check/submit",
+        "file": "src\\app\\(main)\\api\\health-check\\submit\\route.ts"
+      }
+    ],
+    "publicOk": [
+      {
+        "apiPath": "/api/auth/register",
+        "file": "src\\app\\(main)\\api\\auth\\register\\route.ts"
+      }
+    ],
+    "authenticated": [
+      {
+        "apiPath": "/api/auth/config",
+        "file": "src\\app\\api\\auth\\config\\route.ts"
+      },
+      {
+        "apiPath": "/api/business-data/import",
+        "file": "src\\app\\api\\business-data\\import\\route.ts"
+      },
+      {
+        "apiPath": "/api/business-data",
+        "file": "src\\app\\api\\business-data\\route.ts"
+      },
+      {
+        "apiPath": "/api/cron/notifications",
+        "file": "src\\app\\api\\cron\\notifications\\route.ts"
+      },
+      {
+        "apiPath": "/api/diagnosis/deep-analysis",
+        "file": "src\\app\\api\\diagnosis\\deep-analysis\\route.ts"
+      },
+      {
+        "apiPath": "/api/media-items",
+        "file": "src\\app\\api\\media-items\\route.ts"
+      },
+      {
+        "apiPath": "/api/product-models",
+        "file": "src\\app\\api\\product-models\\route.ts"
+      },
+      {
+        "apiPath": "/api/staff/delete",
+        "file": "src\\app\\api\\staff\\delete\\route.ts"
+      },
+      {
+        "apiPath": "/api/staff/reset-password",
+        "file": "src\\app\\api\\staff\\reset-password\\route.ts"
+      },
+      {
+        "apiPath": "/api/staff/toggle-status",
+        "file": "src\\app\\api\\staff\\toggle-status\\route.ts"
+      },
+      {
+        "apiPath": "/api/templates/import",
+        "file": "src\\app\\api\\templates\\import\\route.ts"
+      },
+      {
+        "apiPath": "/api/templates",
+        "file": "src\\app\\api\\templates\\route.ts"
+      },
+      {
+        "apiPath": "/api/version-docs",
+        "file": "src\\app\\api\\version-docs\\route.ts"
+      },
+      {
+        "apiPath": "/api/accessory-gallery",
+        "file": "src\\app\\(main)\\api\\accessory-gallery\\route.ts"
+      },
+      {
+        "apiPath": "/api/accessory-gallery/upload-image",
+        "file": "src\\app\\(main)\\api\\accessory-gallery\\upload-image\\route.ts"
+      },
+      {
+        "apiPath": "/api/admin/backup",
+        "file": "src\\app\\(main)\\api\\admin\\backup\\route.ts"
+      },
+      {
+        "apiPath": "/api/admin/cash-flow",
+        "file": "src\\app\\(main)\\api\\admin\\cash-flow\\route.ts"
+      },
+      {
+        "apiPath": "/api/admin/clients",
+        "file": "src\\app\\(main)\\api\\admin\\clients\\route.ts"
+      },
+      {
+        "apiPath": "/api/admin/clients/id/renew",
+        "file": "src\\app\\(main)\\api\\admin\\clients\\[id]\\renew\\route.ts"
+      },
+      {
+        "apiPath": "/api/admin/clients/id",
+        "file": "src\\app\\(main)\\api\\admin\\clients\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/admin/redemption-codes",
+        "file": "src\\app\\(main)\\api\\admin\\redemption-codes\\route.ts"
+      },
+      {
+        "apiPath": "/api/admin",
+        "file": "src\\app\\(main)\\api\\admin\\route.ts"
+      },
+      {
+        "apiPath": "/api/admin/stats",
+        "file": "src\\app\\(main)\\api\\admin\\stats\\route.ts"
+      },
+      {
+        "apiPath": "/api/after-sales-guide/generate-guide",
+        "file": "src\\app\\(main)\\api\\after-sales-guide\\generate-guide\\route.ts"
+      },
+      {
+        "apiPath": "/api/after-sales-guide/generate-qa",
+        "file": "src\\app\\(main)\\api\\after-sales-guide\\generate-qa\\route.ts"
+      },
+      {
+        "apiPath": "/api/after-sales-guide/polish",
+        "file": "src\\app\\(main)\\api\\after-sales-guide\\polish\\route.ts"
+      },
+      {
+        "apiPath": "/api/after-sales-guide/workflows",
+        "file": "src\\app\\(main)\\api\\after-sales-guide\\workflows\\route.ts"
+      },
+      {
+        "apiPath": "/api/agents",
+        "file": "src\\app\\(main)\\api\\agents\\route.ts"
+      },
+      {
+        "apiPath": "/api/agents/id",
+        "file": "src\\app\\(main)\\api\\agents\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai/diagnose",
+        "file": "src\\app\\(main)\\api\\ai\\diagnose\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai/generate",
+        "file": "src\\app\\(main)\\api\\ai\\generate\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai/knowledge-qa",
+        "file": "src\\app\\(main)\\api\\ai\\knowledge-qa\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai/kpi",
+        "file": "src\\app\\(main)\\api\\ai\\kpi\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai/management-plan",
+        "file": "src\\app\\(main)\\api\\ai\\management-plan\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai/script",
+        "file": "src\\app\\(main)\\api\\ai\\script\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai/solve",
+        "file": "src\\app\\(main)\\api\\ai\\solve\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai-chat-history",
+        "file": "src\\app\\(main)\\api\\ai-chat-history\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai-chat-history/id",
+        "file": "src\\app\\(main)\\api\\ai-chat-history\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai-checkup",
+        "file": "src\\app\\(main)\\api\\ai-checkup\\route.ts"
+      },
+      {
+        "apiPath": "/api/ai-checkup/submit",
+        "file": "src\\app\\(main)\\api\\ai-checkup\\submit\\route.ts"
+      },
+      {
+        "apiPath": "/api/approval",
+        "file": "src\\app\\(main)\\api\\approval\\route.ts"
+      },
+      {
+        "apiPath": "/api/audit-logs",
+        "file": "src\\app\\(main)\\api\\audit-logs\\route.ts"
+      },
+      {
+        "apiPath": "/api/auth/login",
+        "file": "src\\app\\(main)\\api\\auth\\login\\route.ts"
+      },
+      {
+        "apiPath": "/api/auth/profile",
+        "file": "src\\app\\(main)\\api\\auth\\profile\\route.ts"
+      },
+      {
+        "apiPath": "/api/auth/upgrade",
+        "file": "src\\app\\(main)\\api\\auth\\upgrade\\route.ts"
+      },
+      {
+        "apiPath": "/api/boss-weekly",
+        "file": "src\\app\\(main)\\api\\boss-weekly\\route.ts"
+      },
+      {
+        "apiPath": "/api/business-records",
+        "file": "src\\app\\(main)\\api\\business-records\\route.ts"
+      },
+      {
+        "apiPath": "/api/cash-flow",
+        "file": "src\\app\\(main)\\api\\cash-flow\\route.ts"
+      },
+      {
+        "apiPath": "/api/certificate",
+        "file": "src\\app\\(main)\\api\\certificate\\route.ts"
+      },
+      {
+        "apiPath": "/api/cockpit",
+        "file": "src\\app\\(main)\\api\\cockpit\\route.ts"
+      },
+      {
+        "apiPath": "/api/companies",
+        "file": "src\\app\\(main)\\api\\companies\\route.ts"
+      },
+      {
+        "apiPath": "/api/companies/id",
+        "file": "src\\app\\(main)\\api\\companies\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/consultant",
+        "file": "src\\app\\(main)\\api\\consultant\\route.ts"
+      },
+      {
+        "apiPath": "/api/cost-alert-reviews",
+        "file": "src\\app\\(main)\\api\\cost-alert-reviews\\route.ts"
+      },
+      {
+        "apiPath": "/api/cost-alerts",
+        "file": "src\\app\\(main)\\api\\cost-alerts\\route.ts"
+      },
+      {
+        "apiPath": "/api/cost-baseline",
+        "file": "src\\app\\(main)\\api\\cost-baseline\\route.ts"
+      },
+      {
+        "apiPath": "/api/cost-records",
+        "file": "src\\app\\(main)\\api\\cost-records\\route.ts"
+      },
+      {
+        "apiPath": "/api/course-highlights",
+        "file": "src\\app\\(main)\\api\\course-highlights\\route.ts"
+      },
+      {
+        "apiPath": "/api/course-notes",
+        "file": "src\\app\\(main)\\api\\course-notes\\route.ts"
+      },
+      {
+        "apiPath": "/api/courses",
+        "file": "src\\app\\(main)\\api\\courses\\route.ts"
+      },
+      {
+        "apiPath": "/api/courses/id",
+        "file": "src\\app\\(main)\\api\\courses\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/credits",
+        "file": "src\\app\\(main)\\api\\credits\\route.ts"
+      },
+      {
+        "apiPath": "/api/cron/daily-push",
+        "file": "src\\app\\(main)\\api\\cron\\daily-push\\route.ts"
+      },
+      {
+        "apiPath": "/api/custom-knowledge",
+        "file": "src\\app\\(main)\\api\\custom-knowledge\\route.ts"
+      },
+      {
+        "apiPath": "/api/custom-training/import",
+        "file": "src\\app\\(main)\\api\\custom-training\\import\\route.ts"
+      },
+      {
+        "apiPath": "/api/custom-training/review",
+        "file": "src\\app\\(main)\\api\\custom-training\\review\\route.ts"
+      },
+      {
+        "apiPath": "/api/custom-training",
+        "file": "src\\app\\(main)\\api\\custom-training\\route.ts"
+      },
+      {
+        "apiPath": "/api/customer-records",
+        "file": "src\\app\\(main)\\api\\customer-records\\route.ts"
+      },
+      {
+        "apiPath": "/api/customer-records/upload-evidence",
+        "file": "src\\app\\(main)\\api\\customer-records\\upload-evidence\\route.ts"
+      },
+      {
+        "apiPath": "/api/daily-briefing",
+        "file": "src\\app\\(main)\\api\\daily-briefing\\route.ts"
+      },
+      {
+        "apiPath": "/api/daily-data",
+        "file": "src\\app\\(main)\\api\\daily-data\\route.ts"
+      },
+      {
+        "apiPath": "/api/daily-practice",
+        "file": "src\\app\\(main)\\api\\daily-practice\\route.ts"
+      },
+      {
+        "apiPath": "/api/dashboard",
+        "file": "src\\app\\(main)\\api\\dashboard\\route.ts"
+      },
+      {
+        "apiPath": "/api/dashboard/todo-summary",
+        "file": "src\\app\\(main)\\api\\dashboard\\todo-summary\\route.ts"
+      },
+      {
+        "apiPath": "/api/diagnosis",
+        "file": "src\\app\\(main)\\api\\diagnosis\\route.ts"
+      },
+      {
+        "apiPath": "/api/finance/cda-export",
+        "file": "src\\app\\(main)\\api\\finance\\cda-export\\route.ts"
+      },
+      {
+        "apiPath": "/api/finance/cost-alert",
+        "file": "src\\app\\(main)\\api\\finance\\cost-alert\\route.ts"
+      },
+      {
+        "apiPath": "/api/finance/overview",
+        "file": "src\\app\\(main)\\api\\finance\\overview\\route.ts"
+      },
+      {
+        "apiPath": "/api/finance/team-comparison",
+        "file": "src\\app\\(main)\\api\\finance\\team-comparison\\route.ts"
+      },
+      {
+        "apiPath": "/api/homework-grade",
+        "file": "src\\app\\(main)\\api\\homework-grade\\route.ts"
+      },
+      {
+        "apiPath": "/api/incentive",
+        "file": "src\\app\\(main)\\api\\incentive\\route.ts"
+      },
+      {
+        "apiPath": "/api/industry-knowledge/adopt",
+        "file": "src\\app\\(main)\\api\\industry-knowledge\\adopt\\route.ts"
+      },
+      {
+        "apiPath": "/api/industry-knowledge/contribution-stats",
+        "file": "src\\app\\(main)\\api\\industry-knowledge\\contribution-stats\\route.ts"
+      },
+      {
+        "apiPath": "/api/industry-knowledge/like",
+        "file": "src\\app\\(main)\\api\\industry-knowledge\\like\\route.ts"
+      },
+      {
+        "apiPath": "/api/industry-knowledge",
+        "file": "src\\app\\(main)\\api\\industry-knowledge\\route.ts"
+      },
+      {
+        "apiPath": "/api/industry-profile",
+        "file": "src\\app\\(main)\\api\\industry-profile\\route.ts"
+      },
+      {
+        "apiPath": "/api/industry-trends",
+        "file": "src\\app\\(main)\\api\\industry-trends\\route.ts"
+      },
+      {
+        "apiPath": "/api/insights/generate",
+        "file": "src\\app\\(main)\\api\\insights\\generate\\route.ts"
+      },
+      {
+        "apiPath": "/api/insights",
+        "file": "src\\app\\(main)\\api\\insights\\route.ts"
+      },
+      {
+        "apiPath": "/api/insights/id",
+        "file": "src\\app\\(main)\\api\\insights\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/invitations",
+        "file": "src\\app\\(main)\\api\\invitations\\route.ts"
+      },
+      {
+        "apiPath": "/api/invitations/token",
+        "file": "src\\app\\(main)\\api\\invitations\\[token]\\route.ts"
+      },
+      {
+        "apiPath": "/api/item-enhancements/review",
+        "file": "src\\app\\(main)\\api\\item-enhancements\\review\\route.ts"
+      },
+      {
+        "apiPath": "/api/item-enhancements",
+        "file": "src\\app\\(main)\\api\\item-enhancements\\route.ts"
+      },
+      {
+        "apiPath": "/api/item-enhancements/upload-image",
+        "file": "src\\app\\(main)\\api\\item-enhancements\\upload-image\\route.ts"
+      },
+      {
+        "apiPath": "/api/item-feedback",
+        "file": "src\\app\\(main)\\api\\item-feedback\\route.ts"
+      },
+      {
+        "apiPath": "/api/keyword-monitor",
+        "file": "src\\app\\(main)\\api\\keyword-monitor\\route.ts"
+      },
+      {
+        "apiPath": "/api/knowledge-notes",
+        "file": "src\\app\\(main)\\api\\knowledge-notes\\route.ts"
+      },
+      {
+        "apiPath": "/api/knowledge-notes/id",
+        "file": "src\\app\\(main)\\api\\knowledge-notes\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/knowledge-reminder",
+        "file": "src\\app\\(main)\\api\\knowledge-reminder\\route.ts"
+      },
+      {
+        "apiPath": "/api/kpi-assessments/agent/agentId",
+        "file": "src\\app\\(main)\\api\\kpi-assessments\\agent\\[agentId]\\route.ts"
+      },
+      {
+        "apiPath": "/api/kpi-assessments",
+        "file": "src\\app\\(main)\\api\\kpi-assessments\\route.ts"
+      },
+      {
+        "apiPath": "/api/kpi-assessments/id",
+        "file": "src\\app\\(main)\\api\\kpi-assessments\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/kpi-data",
+        "file": "src\\app\\(main)\\api\\kpi-data\\route.ts"
+      },
+      {
+        "apiPath": "/api/kpi-plans",
+        "file": "src\\app\\(main)\\api\\kpi-plans\\route.ts"
+      },
+      {
+        "apiPath": "/api/kpi-schemes",
+        "file": "src\\app\\(main)\\api\\kpi-schemes\\route.ts"
+      },
+      {
+        "apiPath": "/api/kpi-schemes/id",
+        "file": "src\\app\\(main)\\api\\kpi-schemes\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/lesson-feedback",
+        "file": "src\\app\\(main)\\api\\lesson-feedback\\route.ts"
+      },
+      {
+        "apiPath": "/api/lesson-feedback/stats",
+        "file": "src\\app\\(main)\\api\\lesson-feedback\\stats\\route.ts"
+      },
+      {
+        "apiPath": "/api/lesson-notes",
+        "file": "src\\app\\(main)\\api\\lesson-notes\\route.ts"
+      },
+      {
+        "apiPath": "/api/management-plan",
+        "file": "src\\app\\(main)\\api\\management-plan\\route.ts"
+      },
+      {
+        "apiPath": "/api/monthly-report",
+        "file": "src\\app\\(main)\\api\\monthly-report\\route.ts"
+      },
+      {
+        "apiPath": "/api/monthly-reports",
+        "file": "src\\app\\(main)\\api\\monthly-reports\\route.ts"
+      },
+      {
+        "apiPath": "/api/new-content-check",
+        "file": "src\\app\\(main)\\api\\new-content-check\\route.ts"
+      },
+      {
+        "apiPath": "/api/newbie-training/fetch-doc",
+        "file": "src\\app\\(main)\\api\\newbie-training\\fetch-doc\\route.ts"
+      },
+      {
+        "apiPath": "/api/newbie-training/progress",
+        "file": "src\\app\\(main)\\api\\newbie-training\\progress\\route.ts"
+      },
+      {
+        "apiPath": "/api/newbie-training/team-progress",
+        "file": "src\\app\\(main)\\api\\newbie-training\\team-progress\\route.ts"
+      },
+      {
+        "apiPath": "/api/notification-feedback",
+        "file": "src\\app\\(main)\\api\\notification-feedback\\route.ts"
+      },
+      {
+        "apiPath": "/api/notifications",
+        "file": "src\\app\\(main)\\api\\notifications\\route.ts"
+      },
+      {
+        "apiPath": "/api/onboarding",
+        "file": "src\\app\\(main)\\api\\onboarding\\route.ts"
+      },
+      {
+        "apiPath": "/api/onboarding-tasks/complete",
+        "file": "src\\app\\(main)\\api\\onboarding-tasks\\complete\\route.ts"
+      },
+      {
+        "apiPath": "/api/onboarding-tasks",
+        "file": "src\\app\\(main)\\api\\onboarding-tasks\\route.ts"
+      },
+      {
+        "apiPath": "/api/payment-orders",
+        "file": "src\\app\\(main)\\api\\payment-orders\\route.ts"
+      },
+      {
+        "apiPath": "/api/payment-orders/upload",
+        "file": "src\\app\\(main)\\api\\payment-orders\\upload\\route.ts"
+      },
+      {
+        "apiPath": "/api/payment-orders/id",
+        "file": "src\\app\\(main)\\api\\payment-orders\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/cda-analysis",
+        "file": "src\\app\\(main)\\api\\personal\\cda-analysis\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/cda-credits",
+        "file": "src\\app\\(main)\\api\\personal\\cda-credits\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/cda-export",
+        "file": "src\\app\\(main)\\api\\personal\\cda-export\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/chat-check",
+        "file": "src\\app\\(main)\\api\\personal\\chat-check\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/data-records",
+        "file": "src\\app\\(main)\\api\\personal\\data-records\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/feature-trials",
+        "file": "src\\app\\(main)\\api\\personal\\feature-trials\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/growth-dashboard",
+        "file": "src\\app\\(main)\\api\\personal\\growth-dashboard\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/learning-progress",
+        "file": "src\\app\\(main)\\api\\personal\\learning-progress\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/report-export",
+        "file": "src\\app\\(main)\\api\\personal\\report-export\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal/reports",
+        "file": "src\\app\\(main)\\api\\personal\\reports\\route.ts"
+      },
+      {
+        "apiPath": "/api/personal-product-profile",
+        "file": "src\\app\\(main)\\api\\personal-product-profile\\route.ts"
+      },
+      {
+        "apiPath": "/api/phrase-library/refresh-suggest",
+        "file": "src\\app\\(main)\\api\\phrase-library\\refresh-suggest\\route.ts"
+      },
+      {
+        "apiPath": "/api/phrase-library",
+        "file": "src\\app\\(main)\\api\\phrase-library\\route.ts"
+      },
+      {
+        "apiPath": "/api/phrase-library/set-expiry",
+        "file": "src\\app\\(main)\\api\\phrase-library\\set-expiry\\route.ts"
+      },
+      {
+        "apiPath": "/api/phrases",
+        "file": "src\\app\\(main)\\api\\phrases\\route.ts"
+      },
+      {
+        "apiPath": "/api/practical-tasks",
+        "file": "src\\app\\(main)\\api\\practical-tasks\\route.ts"
+      },
+      {
+        "apiPath": "/api/problem-solutions",
+        "file": "src\\app\\(main)\\api\\problem-solutions\\route.ts"
+      },
+      {
+        "apiPath": "/api/product-profile",
+        "file": "src\\app\\(main)\\api\\product-profile\\route.ts"
+      },
+      {
+        "apiPath": "/api/product-profiles",
+        "file": "src\\app\\(main)\\api\\product-profiles\\route.ts"
+      },
+      {
+        "apiPath": "/api/product-profiles/id",
+        "file": "src\\app\\(main)\\api\\product-profiles\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/profit-funnel",
+        "file": "src\\app\\(main)\\api\\profit-funnel\\route.ts"
+      },
+      {
+        "apiPath": "/api/quality-feedbacks",
+        "file": "src\\app\\(main)\\api\\quality-feedbacks\\route.ts"
+      },
+      {
+        "apiPath": "/api/quality-feedbacks/id",
+        "file": "src\\app\\(main)\\api\\quality-feedbacks\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/quality-inspections",
+        "file": "src\\app\\(main)\\api\\quality-inspections\\route.ts"
+      },
+      {
+        "apiPath": "/api/redemption-codes",
+        "file": "src\\app\\(main)\\api\\redemption-codes\\route.ts"
+      },
+      {
+        "apiPath": "/api/redemption-codes/validate",
+        "file": "src\\app\\(main)\\api\\redemption-codes\\validate\\route.ts"
+      },
+      {
+        "apiPath": "/api/redemption-codes/id",
+        "file": "src\\app\\(main)\\api\\redemption-codes\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/reports/export",
+        "file": "src\\app\\(main)\\api\\reports\\export\\route.ts"
+      },
+      {
+        "apiPath": "/api/reports/generate",
+        "file": "src\\app\\(main)\\api\\reports\\generate\\route.ts"
+      },
+      {
+        "apiPath": "/api/reports/list",
+        "file": "src\\app\\(main)\\api\\reports\\list\\route.ts"
+      },
+      {
+        "apiPath": "/api/review",
+        "file": "src\\app\\(main)\\api\\review\\route.ts"
+      },
+      {
+        "apiPath": "/api/rule-updates",
+        "file": "src\\app\\(main)\\api\\rule-updates\\route.ts"
+      },
+      {
+        "apiPath": "/api/rules",
+        "file": "src\\app\\(main)\\api\\rules\\route.ts"
+      },
+      {
+        "apiPath": "/api/schedules",
+        "file": "src\\app\\(main)\\api\\schedules\\route.ts"
+      },
+      {
+        "apiPath": "/api/schedules/id",
+        "file": "src\\app\\(main)\\api\\schedules\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/self-check",
+        "file": "src\\app\\(main)\\api\\self-check\\route.ts"
+      },
+      {
+        "apiPath": "/api/sop-templates",
+        "file": "src\\app\\(main)\\api\\sop-templates\\route.ts"
+      },
+      {
+        "apiPath": "/api/sop-templates/id",
+        "file": "src\\app\\(main)\\api\\sop-templates\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/team/seats",
+        "file": "src\\app\\(main)\\api\\team\\seats\\route.ts"
+      },
+      {
+        "apiPath": "/api/team/seats/id",
+        "file": "src\\app\\(main)\\api\\team\\seats\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/team-learning-progress",
+        "file": "src\\app\\(main)\\api\\team-learning-progress\\route.ts"
+      },
+      {
+        "apiPath": "/api/teams",
+        "file": "src\\app\\(main)\\api\\teams\\route.ts"
+      },
+      {
+        "apiPath": "/api/teams/id/members",
+        "file": "src\\app\\(main)\\api\\teams\\[id]\\members\\route.ts"
+      },
+      {
+        "apiPath": "/api/teams/id",
+        "file": "src\\app\\(main)\\api\\teams\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/template-usage",
+        "file": "src\\app\\(main)\\api\\template-usage\\route.ts"
+      },
+      {
+        "apiPath": "/api/training-data",
+        "file": "src\\app\\(main)\\api\\training-data\\route.ts"
+      },
+      {
+        "apiPath": "/api/user-permissions",
+        "file": "src\\app\\(main)\\api\\user-permissions\\route.ts"
+      },
+      {
+        "apiPath": "/api/user-read-log",
+        "file": "src\\app\\(main)\\api\\user-read-log\\route.ts"
+      },
+      {
+        "apiPath": "/api/user-stats",
+        "file": "src\\app\\(main)\\api\\user-stats\\route.ts"
+      },
+      {
+        "apiPath": "/api/users",
+        "file": "src\\app\\(main)\\api\\users\\route.ts"
+      },
+      {
+        "apiPath": "/api/users/id",
+        "file": "src\\app\\(main)\\api\\users\\[id]\\route.ts"
+      },
+      {
+        "apiPath": "/api/weekly-report",
+        "file": "src\\app\\(main)\\api\\weekly-report\\route.ts"
+      },
+      {
+        "apiPath": "/api/weekly-reports",
+        "file": "src\\app\\(main)\\api\\weekly-reports\\route.ts"
+      },
+      {
+        "apiPath": "/api/work-orders",
+        "file": "src\\app\\(main)\\api\\work-orders\\route.ts"
+      }
+    ]
+  }
+}

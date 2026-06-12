@@ -1,0 +1,3003 @@
+职盈学海客服管理软件 V1.0 源代码
+
+// ===== src/app/(auth)/forgot-password/page.tsx =====
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Zap, Loader2, ArrowLeft, Mail, KeyRound } from 'lucide-react';
+import { getSupabaseBrowser } from '@/lib/supabase-browser';
+
+export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const sb = await getSupabaseBrowser();
+      const domain = typeof window !== 'undefined' ? window.location.origin : '';
+      const { error: authError } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: `${domain}/login?reset=1`,
+      });
+
+      if (authError) {
+        if (authError.message.includes('rate limit')) {
+          setError('请求过于频繁，请稍后再试');
+        } else {
+          setError(authError.message);
+        }
+        return;
+      }
+
+      setSent(true);
+    } catch {
+      setError('发送失败，请重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50 px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-800 shadow-lg shadow-sky-400/25 mb-4">
+            <Zap className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">职盈学海</h1>
+          <p className="text-lg text-gray-700 mt-1 font-medium">找回密码</p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8">
+          {sent ? (
+            <div className="text-center">
+              <div className="mx-auto w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
+                <Mail className="w-10 h-10 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">重置链接已发送</h2>
+              <p className="text-base text-gray-600 mb-2">
+                重置链接已发送至
+              </p>
+              <p className="text-lg font-semibold text-gray-900 mb-6">{email}</p>
+              <p className="text-base text-gray-500 mb-8 leading-relaxed">
+                请检查您的收件箱（含垃圾邮件文件夹），点击邮件中的链接即可重置密码。
+              </p>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                返回登录
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                  <KeyRound className="w-5 h-5 text-orange-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">忘记密码？</h2>
+              </div>
+              <p className="text-base text-gray-500 mb-6 leading-relaxed">
+                输入注册时的邮箱，我们将发送重置链接到您的邮箱
+              </p>
+
+              {error && (
+                <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-base font-medium">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-base font-semibold text-gray-700 mb-2">邮箱地址</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="请输入注册时使用的邮箱"
+                    required
+                    className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 outline-none transition-colors text-lg"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
+                  {loading ? '发送中...' : '发送重置链接'}
+                </button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 text-base text-orange-500 hover:text-orange-600 font-medium"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  返回登录
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== src/app/(auth)/intro-efficiency/page.tsx =====
+import Link from 'next/link';
+import {
+  Zap, Bot, ClipboardCheck, FileText, BookOpen,
+  BarChart3, ShieldCheck, ArrowRight, CheckCircle2,
+  Flame, Lock, Star, TrendingUp, Award,
+} from 'lucide-react';
+
+export default function IntroEfficiencyPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-blue-950 to-slate-900 text-white">
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur border-b border-white/10">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <span className="text-lg font-bold tracking-wide">职盈学海</span>
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-sm text-white/70 hover:text-white transition">登录</Link>
+            <Link
+              href="/register?role=efficiency_user"
+              className="text-sm px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-blue-950 font-semibold rounded-lg transition"
+            >
+              立即开通
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Hero: 99效率版 ── */}
+      <section className="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-cyan-500/10 border border-cyan-400/20 rounded-full mb-6">
+          <Zap className="w-4 h-4 text-cyan-400" />
+          <span className="text-cyan-300 text-sm font-medium">99效率版 · 一线客服提效利器</span>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-6">
+          不用学管理<span className="text-cyan-400">，</span><br />
+          只用借AI<span className="text-cyan-400">干活</span>
+        </h1>
+        <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">
+          99元/年，AI急救站不限次+3项AI体检+话术练兵场+产品档案+模板库
+        </p>
+        <Link
+          href="/register?role=efficiency_user"
+          className="inline-flex items-center gap-2 px-8 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-blue-950 font-bold text-lg rounded-xl transition shadow-lg shadow-cyan-500/20"
+        >
+          立即开通效率版 99元/年
+          <ArrowRight className="w-5 h-5" />
+        </Link>
+      </section>
+
+      {/* ── 第一屏：三个担心 ── */}
+      <section className="max-w-4xl mx-auto px-6 pb-20">
+        <h2 className="text-2xl font-bold text-center mb-10">你可能担心的三件事</h2>
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            {
+              icon: ShieldCheck,
+              title: '不是试用、不是内测、不是精简体验版',
+              desc: '99元/年是独立正式版，完整功能、持续更新、独立服务',
+            },
+            {
+              icon: Zap,
+              title: '无需强制升级980',
+              desc: '功能完全独立适配一线岗位，不升级也够用、不降级、不缩水',
+            },
+            {
+              icon: CheckCircle2,
+              title: '无删减、无隐藏次数、无变相限制',
+              desc: '核心提效功能全部开放，AI急救站不限次、AI体检真实出结果',
+            },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-cyan-400/30 transition"
+            >
+              <item.icon className="w-8 h-8 text-cyan-400 mb-4" />
+              <p className="font-bold text-white mb-2">✅ {item.title}</p>
+              <p className="text-sm text-white/50">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 第二屏：场景化痛点 ── */}
+      <section className="max-w-4xl mx-auto px-6 pb-20">
+        <h2 className="text-2xl font-bold text-center mb-3">一线客服的真实痛点</h2>
+        <p className="text-center text-white/50 mb-10">每个场景，都有AI帮你3秒解决</p>
+        <div className="grid gap-5 md:grid-cols-2">
+          {[
+            {
+              emoji: '🔥',
+              pain: '加班写售后回复、反复改话术',
+              solution: 'AI急救站3秒出专业话术',
+              icon: Bot,
+            },
+            {
+              emoji: '📝',
+              pain: '自己写的话术不知道行不行',
+              solution: 'AI体检站帮你批改',
+              icon: ClipboardCheck,
+            },
+            {
+              emoji: '📋',
+              pain: '售后流程总是漏环节',
+              solution: 'SOP体检帮你扫缺口补漏洞',
+              icon: FileText,
+            },
+            {
+              emoji: '💼',
+              pain: '产品信息每次重复填',
+              solution: '产品档案一次录入全打通',
+              icon: BookOpen,
+            },
+          ].map((item) => (
+            <div
+              key={item.pain}
+              className="bg-white/5 border border-white/10 rounded-2xl p-5 flex gap-4 items-start hover:border-cyan-400/30 transition"
+            >
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+                <item.icon className="w-6 h-6 text-cyan-400" />
+              </div>
+              <div>
+                <p className="text-white/70 text-sm mb-1">{item.emoji} {item.pain}</p>
+                <p className="font-semibold text-cyan-300">→ {item.solution}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-center mt-8 text-lg font-semibold text-white/80">
+          不用学管理，只用借AI干活
+        </p>
+      </section>
+
+      {/* ── 第三屏：980是什么 ── */}
+      <section className="max-w-4xl mx-auto px-6 pb-20">
+        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-400/20 rounded-2xl p-8 md:p-10">
+          <div className="flex items-center gap-3 mb-4">
+            <TrendingUp className="w-7 h-7 text-amber-400" />
+            <h2 className="text-2xl font-bold">980是什么？</h2>
+          </div>
+          <p className="text-white/70 mb-4 text-lg">
+            <span className="text-cyan-400 font-semibold">99帮你省时间</span>，<span className="text-amber-400 font-semibold">980帮你学管理</span>
+          </p>
+          <p className="text-white/50 mb-6">
+            不止是工具，是职场晋升必备体系课
+          </p>
+          <div className="grid gap-3 md:grid-cols-2">
+            {[
+              { icon: BookOpen, text: '25课管理课程' },
+              { icon: BarChart3, text: 'KPI规划器' },
+              { icon: ClipboardCheck, text: 'AI体检全5项' },
+              { icon: Award, text: '周报月报复盘' },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-3 text-white/60">
+                <item.icon className="w-5 h-5 text-amber-400" />
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-sm text-amber-300/70">
+            想从一线晋升管理层？980管理版等你升级，99年费可抵扣，实付881元 →
+          </p>
+        </div>
+      </section>
+
+      {/* ── 第四屏：功能对比表 ── */}
+      <section className="max-w-4xl mx-auto px-6 pb-20">
+        <h2 className="text-2xl font-bold text-center mb-10">99 vs 980 功能对比</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-white/10">
+                <th className="text-left py-3 px-4 text-white/50 font-medium">功能</th>
+                <th className="text-center py-3 px-4 font-semibold text-cyan-400">
+                  效率版 99/年
+                </th>
+                <th className="text-center py-3 px-4 font-semibold text-amber-400">
+                  管理版 980
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { name: 'AI急救站（不限次）', free: true, pro: true },
+                { name: 'AI体检 - 话术体检', free: true, pro: true },
+                { name: 'AI体检 - SOP体检', free: true, pro: true },
+                { name: 'AI体检 - 案例体检', free: true, pro: true },
+                { name: 'AI体检 - 质检体检', free: false, pro: true },
+                { name: 'AI体检 - 方案体检', free: false, pro: true },
+                { name: '话术练兵场', free: true, pro: true },
+                { name: '产品档案', free: true, pro: true },
+                { name: '模板库', free: true, pro: true },
+                { name: '25课管理课程', free: false, pro: true },
+                { name: 'KPI规划器', free: false, pro: true },
+                { name: '周报月报复盘', free: false, pro: true },
+                { name: '管理工具包', free: false, pro: true },
+              ].map((row) => (
+                <tr key={row.name} className="border-b border-white/5 hover:bg-white/5 transition">
+                  <td className="py-3 px-4 text-white/70">{row.name}</td>
+                  <td className="py-3 px-4 text-center">
+                    {row.free ? (
+                      <CheckCircle2 className="w-5 h-5 text-cyan-400 mx-auto" />
+                    ) : (
+                      <Lock className="w-4 h-4 text-white/20 mx-auto" />
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <CheckCircle2 className="w-5 h-5 text-amber-400 mx-auto" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* ── 第五屏：信任背书占位 ── */}
+      <section className="max-w-4xl mx-auto px-6 pb-20">
+        <div className="bg-white/5 border border-white/10 border-dashed rounded-2xl p-10 text-center">
+          <Star className="w-8 h-8 text-white/20 mx-auto mb-4" />
+          <p className="text-white/30 text-lg font-medium mb-2">用户好评与数据背书</p>
+          <p className="text-white/20 text-sm">即将上线</p>
+        </div>
+      </section>
+
+      {/* ── 底部CTA ── */}
+      <section className="max-w-4xl mx-auto px-6 pb-10 text-center">
+        <h2 className="text-3xl font-extrabold mb-4">开始用AI提效</h2>
+        <p className="text-white/50 mb-8">99元/年 · 独立正式版 · 无隐藏限制</p>
+        <Link
+          href="/register?role=efficiency_user"
+          className="inline-flex items-center gap-2 px-10 py-4 bg-cyan-500 hover:bg-cyan-400 text-blue-950 font-bold text-lg rounded-xl transition shadow-lg shadow-cyan-500/20"
+        >
+          立即开通效率版 99元/年
+          <ArrowRight className="w-5 h-5" />
+        </Link>
+      </section>
+
+      {/* ── 版本选择 ── */}
+      <section className="max-w-4xl mx-auto px-6 pb-16">
+        <h3 className="text-center text-white/50 text-sm mb-6">有任何问题？<a href="/contact" className="underline font-medium text-white/70 hover:text-white">添加微信咨询</a>，专属顾问1对1解答</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          {[
+            { name: '效率版', desc: '一线AI提效工具', href: '/register?role=efficiency_user', active: true },
+            { name: '个人版', desc: '团队管理训练营', href: '/intro/personal' },
+            { name: '专业版', desc: '团队管理训练营', href: '/intro/professional' },
+            { name: '旗舰版', desc: '陪跑式深度服务', href: '/intro/flagship' },
+          ].map((v) => (
+            <Link
+              key={v.name}
+              href={v.href}
+              className="block rounded-xl border border-white/10 bg-white/5 hover:border-white/20 p-5 text-center transition"
+            >
+              <p className={`font-bold text-lg ${v.active ? 'text-cyan-400' : 'text-white/80'}`}>
+                {v.name} {v.active && '✓'}
+              </p>
+              <p className="text-white/40 text-xs mt-1">{v.desc}</p>
+            </Link>
+          ))}
+        </div>
+        <div className="text-center mt-6">
+          <Link href="/login" className="text-white/30 hover:text-white/50 text-sm transition">
+            ← 返回登录
+          </Link>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-white/10 py-8 text-center text-white/30 text-xs">
+        <p>© 2025 职盈学海 · 1051202571@qq.com</p>
+        <p className="mt-1">本平台不构成任何投资或法律建议</p>
+      </footer>
+    </div>
+  );
+}
+
+// ===== src/app/(auth)/layout.tsx =====
+export default function AuthLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return <>{children}</>;
+}
+
+// ===== src/app/(auth)/login/page.tsx =====
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { getSupabaseBrowser } from '@/lib/supabase-browser';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Zap, Eye, EyeOff, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { validateEmail, validatePassword } from '@/lib/validate';
+import Captcha from '@/components/captcha';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [agreed, setAgreed] = useState(false);
+  const [captchaValid, setCaptchaValid] = useState(false);
+
+  // Password reset mode
+  const [resetMode, setResetMode] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetDone, setResetDone] = useState(false);
+
+  // Detect password reset callback from Supabase
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash.includes('type=recovery')) {
+        setResetMode(true);
+      }
+    }
+  }, []);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    (async () => {
+      try {
+        const sb = await getSupabaseBrowser();
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+          router.replace('/');
+        }
+      } catch { /* ignore */ }
+    })();
+  }, [router]);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    const pwCheck = validatePassword(newPassword);
+    if (!pwCheck.valid) {
+      setError(pwCheck.error || '密码格式不正确');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('两次输入的密码不一致');
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const sb = await getSupabaseBrowser();
+      const { error: updateError } = await sb.auth.updateUser({ password: newPassword });
+      if (updateError) {
+        setError(updateError.message || '重置失败，请重试');
+        return;
+      }
+      setResetDone(true);
+    } catch {
+      setError('重置失败，请重试');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    // Frontend validation
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+      setError(emailCheck.error || '邮箱格式不正确');
+      return;
+    }
+    if (!password || password.length < 1) {
+      setError('请输入密码');
+      return;
+    }
+    if (!captchaValid) {
+      setError('请正确输入验证码');
+      return;
+    }
+    if (!agreed) {
+      setError('请阅读并同意用户协议和隐私政策');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const sb = await getSupabaseBrowser();
+      const { error: authError } = await sb.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        const msg = authError.message;
+        if (msg === 'Invalid login credentials') {
+          setError('邮箱或密码错误，请检查后重试');
+        } else if (msg.includes('Email not confirmed')) {
+          setError('邮箱未验证，请检查邮箱中的验证链接');
+        } else if (msg.includes('rate limit') || msg.includes('too many')) {
+          setError('登录尝试过于频繁，请5分钟后再试');
+        } else if (msg.includes('锁定') || msg.includes('locked')) {
+          setError('账号已锁定，请15分钟后重试');
+        } else {
+          setError('登录失败: ' + msg);
+        }
+        return;
+      }
+
+      // Small delay to let AuthProvider process the session change
+      await new Promise(r => setTimeout(r, 300));
+
+      // Check account expiration
+      try {
+        const sb = await getSupabaseBrowser();
+        const { data: { user: authUser } } = await sb.auth.getUser();
+        if (authUser) {
+          const { data: profile } = await sb
+            .from('users')
+            .select('user_type, role, expires_at')
+            .eq('id', authUser.id)
+            .maybeSingle();
+          // Check if account has expired
+          if (profile?.expires_at && new Date(profile.expires_at) < new Date()) {
+            await sb.auth.signOut();
+            setError('账号已过期，请联系管理员订阅');
+            setLoading(false);
+            return;
+          }
+          if (profile?.role === 'admin') {
+            router.push('/admin');
+          } else if (profile?.user_type === 'manager') {
+            router.push('/dashboard/boss-weekly');
+          } else {
+            router.push('/');
+          }
+        } else {
+          router.push('/');
+        }
+      } catch {
+        router.push('/');
+      }
+      router.refresh();
+    } catch (err) {
+      console.error('[Login] Error:', err);
+      setError('登录失败，请重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50 px-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-800 shadow-lg shadow-sky-400/25 mb-4">
+            <Zap className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">职盈学海</h1>
+          <p className="text-gray-700 mt-1 text-sm font-medium">客服管理智能平台</p>
+        </div>
+
+        {/* Login Card */}
+        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8">
+          {resetMode ? (
+            resetDone ? (
+              <div className="text-center">
+                <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-6 h-6 text-green-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">密码重置成功</h2>
+                <p className="text-base text-gray-500 mb-6">请使用新密码登录</p>
+                <button
+                  onClick={() => { setResetMode(false); setResetDone(false); }}
+                  className="w-full py-2.5 rounded-lg bg-gradient-to-r from-sky-400 to-blue-800 text-white font-medium hover:from-blue-900 hover:to-blue-950 transition-all"
+                >
+                  去登录
+                </button>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">设置新密码</h2>
+                <p className="text-gray-500 text-sm mb-6">请输入你的新密码</p>
+                {error && (
+                  <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-base font-medium">{error}</div>
+                )}
+                <form onSubmit={handleResetPassword} className="space-y-5">
+                  <div>
+                    <label className="block text-base font-semibold text-gray-700 mb-2">新密码</label>
+                    <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="至少6位" required className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 outline-none transition-colors text-lg" />
+                  </div>
+                  <div>
+                    <label className="block text-base font-semibold text-gray-700 mb-2">确认新密码</label>
+                    <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="再次输入新密码" required className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 outline-none transition-colors text-lg" />
+                  </div>
+                  <button type="submit" disabled={resetLoading} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25">
+                    {resetLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                    {resetLoading ? '提交中...' : '重置密码'}
+                  </button>
+                </form>
+              </>
+            )
+          ) : (
+          <>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">欢迎回来</h2>
+          <p className="text-gray-500 text-sm mb-6">登录你的账号继续使用</p>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-6 animate-fade-in-up">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">邮箱</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="请输入邮箱"
+                required
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-colors text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">密码</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="输入密码"
+                  required
+                  className="w-full px-4 py-2.5 pr-10 rounded-lg border border-gray-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-colors text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+                <div className="flex items-center justify-between">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-sky-500 hover:text-sky-600 font-medium"
+                  >
+                    忘记密码？
+                  </Link>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">验证码</label>
+                  <Captcha onValidate={setCaptchaValid} />
+                </div>
+
+                {/* 用户协议/隐私政策勾选 */}
+                <label className="flex items-start gap-2 text-sm text-gray-600 mt-1">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => { setAgreed(e.target.checked); if (e.target.checked) setError(''); }}
+                    className="mt-0.5 w-4 h-4 rounded border-gray-300 text-sky-500 focus:ring-sky-400"
+                  />
+                  <span>我已阅读并同意
+                    <Link href="/terms" target="_blank" className="text-[#2B7DE9] hover:underline font-medium">《用户协议》</Link>
+                    和
+                    <Link href="/privacy" target="_blank" className="text-[#2B7DE9] hover:underline font-medium">《隐私政策》</Link>
+                  </span>
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2.5 rounded-lg bg-gradient-to-r from-sky-400 to-blue-800 text-white font-medium hover:from-blue-900 hover:to-blue-950 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md shadow-sky-400/25"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  {loading ? '登录中...' : '登录'}
+                </button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-gray-500">
+            没有账号？
+            <Link href="/register" className="text-blue-900 hover:text-blue-950 font-medium ml-1">
+              注册个人版
+            </Link>
+          </div>
+          <div className="mt-3 text-center">
+            <Link
+              href="/intro/personal"
+              className="text-sm text-sky-600 hover:text-sky-700 font-medium inline-flex items-center gap-1"
+            >
+              了解产品方案 <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== src/app/(auth)/privacy/page.tsx =====
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+
+export default function PrivacyPage() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-[#2B7DE9] hover:underline mb-6 text-base"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          返回
+        </Link>
+
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">隐私政策</h1>
+        <p className="text-sm text-gray-500 mb-8">
+          服务提供方：职盈学海（品牌）/ 创始人（个人经营者）<br />
+          生效日期：2026年06月01日<br />
+          依据：《中华人民共和国个人信息保护法》《中华人民共和国网络安全法》《中华人民共和国数据安全法》《网络数据安全管理条例》《数据出境安全评估办法》
+        </p>
+
+        <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8 space-y-8 text-gray-800 leading-relaxed text-[15px]">
+          {/* 第一章 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">一、信息收集原则</h2>
+            <div className="space-y-3">
+              <p>我们严格遵守"合法、正当、必要、最小化"原则收集和使用您的个人信息。我们仅收集为您提供服务所必需的信息，不会收集与服务无关的个人信息，也不会以任何方式强迫您提供非必要信息。</p>
+            </div>
+          </section>
+
+          {/* 第二章 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">二、我们收集的信息</h2>
+            <div className="space-y-3">
+              <p><strong>2.1 必要信息</strong>：为向您提供基本服务，我们收集以下必要信息：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>手机号码：用于账号注册、登录验证及安全通知</li>
+                <li>昵称/显示名称：用于平台内身份展示与协作</li>
+                <li>用户自录入的工作数据：如员工信息、业绩数据、成本数据等，由用户自主录入，我们仅提供存储与展示服务</li>
+              </ul>
+              <p><strong>2.2 我们绝不收集</strong>以下敏感信息：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>身份证号码、实名认证信息</li>
+                <li>银行卡号、支付密码</li>
+                <li>通讯录、手机相册</li>
+                <li>地理位置信息</li>
+                <li>短信内容</li>
+                <li>生物识别信息（指纹、面部识别等）</li>
+              </ul>
+            </div>
+          </section>
+
+          {/* 第三章 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">三、信息使用范围</h2>
+            <div className="space-y-3">
+              <p><strong>3.1</strong> 我们收集的信息仅用于以下目的：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>提供在线学习、培训体系及管理工具服务</li>
+                <li>保障账号安全与系统稳定运行</li>
+                <li>响应用户的客服与支持请求</li>
+              </ul>
+              <p><strong>3.2</strong> 我们不会将您的信息用于：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>用户画像</li>
+                <li>商业营销或广告推送</li>
+                <li>向第三方出售、交易或共享</li>
+                <li>与第三方合作进行数据分析或挖掘</li>
+              </ul>
+            </div>
+          </section>
+
+          {/* 第四章 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">四、信息共享与披露</h2>
+            <div className="space-y-3">
+              <p><strong>4.1</strong> 我们不会售卖、泄露或主动共享您的个人信息给任何第三方。</p>
+              <p><strong>4.2</strong> 仅在以下法定情形下，我们可能依法披露您的信息：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>经您事先同意或授权</li>
+                <li>根据法律法规规定或行政、司法机关的强制性要求</li>
+                <li>为保护服务方及平台其他用户的合法权益所合理必需</li>
+              </ul>
+            </div>
+          </section>
+
+          {/* 第五章 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">五、数据安全保护</h2>
+            <div className="space-y-3">
+              <p>我们采取以下技术和管理措施保护您的数据安全：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>全站HTTPS加密传输，保障数据传输安全</li>
+                <li>多租户数据隔离架构，不同企业数据严格隔离存储</li>
+                <li>令牌认证（Token Authentication）机制保护接口访问，定期备份关键数据</li>
+                <li>用户数据存储于Supabase云端数据库（由Supabase Inc.提供，服务器位于美国），我们已进行数据出境安全风险评估，并采取加密存储、访问控制等保护措施</li>
+              </ul>
+            </div>
+          </section>
+
+          {/* 第六章 - 更新：数据出境合规说明 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">六、数据出境合规说明</h2>
+            <div className="space-y-3">
+              <p><strong>6.1 合法性基础</strong>：本平台使用Supabase Inc.（美国）提供的云端数据库服务，用户在平台中录入和产生的数据将存储于Supabase位于美国的数据中心，构成个人信息出境。我们依据《中华人民共和国个人信息保护法》第三十八条的规定，已履行数据出境安全风险评估及相关合规义务，确保数据出境活动合法合规。</p>
+              <p><strong>6.2 出境目的与范围</strong>：数据出境仅用于平台核心功能的存储与计算，包括课程学习记录、管理工具数据、账号信息等。我们不会将您的数据用于出境目的之外的其他用途。</p>
+              <p><strong>6.3 接收方安全认证</strong>：数据出境的接收方为Supabase Inc.（supabase.com），其已获得以下安全认证与合规资质：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>SOC2 Type II 安全审计认证</li>
+                <li>传输加密（TLS 1.2+）与静态数据加密（AES-256）</li>
+                <li>ISO 27001 信息安全管理体系认证</li>
+                <li>符合欧盟GDPR合规要求</li>
+              </ul>
+              <p><strong>6.4 持续合规保障</strong>：我们承诺持续关注中国及境外数据保护法律法规的变化，定期评估数据出境的安全风险，并在法律法规要求时及时补充或调整合规措施，确保数据出境活动始终处于合法合规状态。</p>
+              <p><strong>6.5 用户权利保障</strong>：我们充分尊重您的知情权和决定权，不会因您行使权利而降低服务质量。如果您对数据出境有疑问或希望了解详情，可随时通过本政策列明的联系方式与我们联系，我们将在15个工作日内予以回复。</p>
+            </div>
+          </section>
+
+          {/* 第七章 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">七、用户数据权利</h2>
+            <div className="space-y-3">
+              <p>您对您的个人信息享有以下权利：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li><strong>查看权</strong>：您可随时在平台内查看您的个人资料和录入的数据</li>
+                <li><strong>导出权</strong>：您可导出您在平台中录入的数据内容</li>
+                <li><strong>删除权与注销权</strong>：您可申请删除个人信息或注销账号，具体操作路径为：登录后进入「个人中心」→「账号设置」→「注销账号」，我们将在15个工作日内完成处理</li>
+                <li><strong>撤回同意权</strong>：您可随时撤回对个人信息处理的同意，撤回方式同上。撤回同意不影响撤回前基于您的同意已合法进行的个人信息处理活动的效力</li>
+              </ul>
+              <p><strong>无法删除的例外情形</strong>：根据相关法律法规要求，部分信息在法定留存期限内无法删除，包括但不限于：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>交易记录及财务相关信息（依法需保留不少于3年）</li>
+                <li>网络安全日志信息（依法需保留不少于6个月）</li>
+              </ul>
+              <p>法定留存期限届满后，我们将自动删除或匿名化处理上述信息。</p>
+            </div>
+          </section>
+
+          {/* 第八章 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">八、团队数据说明</h2>
+            <div className="space-y-3">
+              <p>对于企业版用户，团队数据管理遵循以下规则：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>不同企业的数据严格私有隔离，企业间不可互访</li>
+                <li>企业管理员（主管/老板角色）仅能查看下属成员的学习进度汇总，无法查看成员具体录入的工作数据内容</li>
+                <li>我们不会将企业数据对外披露、商用或用于AI模型训练</li>
+              </ul>
+            </div>
+          </section>
+
+          {/* 第九章 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">九、未成年人保护</h2>
+            <div className="space-y-3">
+              <p><strong>9.1</strong> 本平台面向成年工作者提供服务，不接受未满18周岁的未成年人注册使用。</p>
+              <p><strong>9.2</strong> 如果我们发现未成年人在未获得监护人同意的情况下使用本平台，将立即注销其账号并删除相关信息。</p>
+              <p><strong>9.3</strong> 我们不会主动收集未成年人的个人信息。如因监护人允许未成年人使用其账号而产生的问题，由监护人承担相应责任。</p>
+              <p><strong>9.4</strong> 监护人如发现未成年人未经允许使用本平台，可随时通过本政策列明的联系方式通知我们，我们将在核实后及时处理。</p>
+            </div>
+          </section>
+
+          {/* 第十章 - 更新：提前7天通知 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">十、政策更新</h2>
+            <div className="space-y-3">
+              <p>我们可能适时修订本隐私政策。修订后的政策将在平台页面公布。对于重大变更（如信息收集范围扩大、数据出境安排变更等），我们将提前7天通过平台内通知或其他合理方式告知您，您有权在变更生效前选择是否继续使用本服务。</p>
+              <p>如您在政策修订后继续使用本平台，视为您同意修订后的内容。如您不同意修订内容，可停止使用本服务并申请注销账号。</p>
+            </div>
+          </section>
+
+          {/* 第十一章 - 更新：联系邮箱 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">十一、联系渠道</h2>
+            <div className="space-y-3">
+              <p>如您对本隐私政策有任何疑问或需要行使您的数据权利，可通过以下方式联系我们：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>平台内帮助中心在线反馈</li>
+                <li>电子邮箱：1051202571@qq.com</li>
+              </ul>
+              <p>我们将在收到您的请求后15个工作日内予以回复和处理。</p>
+            </div>
+          </section>
+        </div>
+
+        <p className="text-center text-sm text-gray-400 mt-8">
+          职盈学海（品牌）/ 创始人（个人经营者）
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ===== src/app/(auth)/register/page.tsx =====
+'use client';
+
+import React, { useState, useEffect, Suspense } from 'react';
+import { getSupabaseBrowser } from '@/lib/supabase-browser';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { Zap, Eye, EyeOff, Loader2, ArrowLeft, ArrowRight, Users } from 'lucide-react';
+import { validateEmail, validatePassword, validatePhone, validateCode } from '@/lib/validate';
+import Captcha from '@/components/captcha';
+
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-blue-900" /></div>}>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('invite');
+  const [step, setStep] = useState<1 | 2>(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Step 1
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Step 2
+  const [role, setRole] = useState<string>(inviteToken ? 'staff' : 'efficiency_user');
+  const [companyName, setCompanyName] = useState('');
+  const [phone, setPhone] = useState('');
+
+  // Invitation state
+  const [inviteInfo, setInviteInfo] = useState<{ companyName: string; inviterName: string } | null>(null);
+  const [inviteChecked, setInviteChecked] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [redemptionCode, setRedemptionCode] = useState('');
+  const [captchaValid, setCaptchaValid] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    (async () => {
+      try {
+        const sb = await getSupabaseBrowser();
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+          router.replace('/onboarding');
+        }
+      } catch { /* ignore */ }
+    })();
+  }, [router]);
+
+  // Validate invitation token
+  useEffect(() => {
+    if (!inviteToken) { setInviteChecked(true); return; }
+    (async () => {
+      try {
+        const res = await fetch(`/api/invitations/${inviteToken}`);
+        const data = await res.json();
+        if (res.ok && data.data?.status === 'pending') {
+          setInviteInfo({ companyName: data.data.company_name || '企业', inviterName: data.data.inviter_name || '管理员' });
+        } else {
+          setError(data.error || '邀请链接已失效或已使用');
+        }
+      } catch {
+        setError('邀请链接验证失败');
+      }
+      setInviteChecked(true);
+    })();
+  }, [inviteToken]);
+
+  const validateStep1 = () => {
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) return emailCheck.error || '邮箱格式不正确';
+    if (!password) return '请输入密码';
+    const pwCheck = validatePassword(password);
+    if (!pwCheck.valid) return pwCheck.error || '密码格式不正确';
+    if (password !== confirmPassword) return '两次密码不一致';
+    return '';
+  };
+
+  const handleNext = () => {
+    const err = validateStep1();
+    if (err) { setError(err); return; }
+    setError('');
+    setStep(2);
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!captchaValid) { setError('请正确输入验证码'); return; }
+    const codeCheck = validateCode(redemptionCode);
+    if (!codeCheck.valid) { setError(codeCheck.error || '兑换码格式不正确'); return; }
+    if (phone) {
+      const phoneCheck = validatePhone(phone);
+      if (!phoneCheck.valid) { setError(phoneCheck.error || '手机号格式不正确'); return; }
+    }
+    setError('');
+    setLoading(true);
+
+    try {
+      // 1. Register via our API (creates user record with selected role)
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          role: role,
+          phone,
+          inviteToken: inviteToken || undefined,
+          redemptionCode: redemptionCode.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || '注册失败');
+        return;
+      }
+
+      // 2. Sign in with Supabase Auth
+      const sb = await getSupabaseBrowser();
+      const { error: authError } = await sb.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        // Registration succeeded but auto-login failed — that's OK, redirect to login
+        setError('');
+        setTimeout(() => {
+          router.push('/login');
+        }, 500);
+        return;
+      }
+
+      // Small delay to let AuthProvider process the session change
+      await new Promise(r => setTimeout(r, 300));
+      router.push('/onboarding');
+      router.refresh();
+    } catch {
+      setError('注册失败，请重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50 px-4 py-8">
+      <div className="w-full max-w-lg">
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-800 shadow-lg shadow-sky-400/25 mb-4">
+            <Zap className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">创建账号</h1>
+          <p className="text-gray-500 mt-1">开通你的客服管理智能平台</p>
+        </div>
+
+        {/* Progress */}
+        <div className="flex items-center gap-2 mb-6">
+          <div className={`flex items-center gap-1.5 text-sm font-medium ${step >= 1 ? 'text-blue-900' : 'text-gray-400'}`}>
+            <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-r from-sky-400 to-blue-800">1</span>
+            账号信息
+          </div>
+          <div className={`flex-1 h-0.5 rounded ${step >= 2 ? 'bg-sky-400' : 'bg-gray-200'}`} />
+          <div className={`flex items-center gap-1.5 text-sm font-medium ${step >= 2 ? 'text-blue-900' : 'text-gray-400'}`}>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step >= 2 ? 'text-white bg-gradient-to-r from-sky-400 to-blue-800' : 'text-gray-500 bg-gray-200'}`}>2</span>
+            完成注册
+          </div>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8">
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          {step === 1 ? (
+            <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-6 animate-fade-in-up">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">邮箱</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="请输入邮箱"
+                  required
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-colors text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">密码</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="至少6位"
+                    required
+                    minLength={6}
+                    className="w-full px-4 py-2.5 pr-10 rounded-lg border border-gray-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-colors text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">密码至少8位，必须包含字母和数字</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">确认密码</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="再次输入密码"
+                  required
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-colors text-sm"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 rounded-lg bg-gradient-to-r from-sky-400 to-blue-800 text-white font-medium hover:from-blue-900 hover:to-blue-950 transition-all flex items-center justify-center gap-2 shadow-md shadow-sky-400/25"
+              >
+                下一步
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleRegister} className="space-y-5">
+              {/* Invitation banner */}
+              {inviteToken && inviteInfo && (
+                <div className="p-4 rounded-xl bg-sky-50 border border-sky-200 mb-2">
+                  <div className="flex items-center gap-2 text-blue-900 font-medium mb-1">
+                    <Users className="w-4 h-4" />
+                    邀请注册
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    你已被 <span className="font-medium text-blue-900">{inviteInfo.inviterName}</span> 邀请加入 <span className="font-medium text-blue-900">{inviteInfo.companyName}</span>
+                  </p>
+                  <p className="text-xs text-gray-700 mt-1">注册后将自动加入团队，角色为客服</p>
+                </div>
+              )}
+
+              {/* 版本选择 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">选择版本</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRole('efficiency_user')}
+                    className={`p-3 rounded-xl border-2 text-left transition-all ${role === 'efficiency_user' ? 'border-cyan-500 bg-cyan-50' : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-cyan-100 text-cyan-700 font-medium">¥99/年</span>
+                      <span className="font-semibold text-sm text-gray-900">效率版</span>
+                    </div>
+                    <p className="text-xs text-gray-500">AI急救站+3项体检+话术练兵场+产品档案</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole('personal_user')}
+                    className={`p-3 rounded-xl border-2 text-left transition-all ${role === 'personal_user' ? 'border-amber-500 bg-amber-50' : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">¥980买断</span>
+                      <span className="font-semibold text-sm text-gray-900">管理版</span>
+                    </div>
+                    <p className="text-xs text-gray-500">25课系统管理课程+深度AI诊断+KPI工具</p>
+                    <p className="text-xs text-amber-600 mt-0.5">已购效率版可抵扣99元，实付881元</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* 兑换码（唯一注册方式） */}
+              <div className="space-y-3">
+                <div className={`p-3 rounded-lg border text-sm ${role === 'efficiency_user' ? 'bg-cyan-50 border-cyan-200 text-cyan-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
+                  {role === 'efficiency_user'
+                    ? '效率版：AI急救站（不限次）+ 3项AI体检 + 话术练兵场 + 产品档案 + 模板库 — 后续可抵扣99元升级管理版'
+                    : '管理版：25课系统管理课程 + 全部AI体检 + KPI规划器 + 管理工具包'}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    兑换码 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={redemptionCode}
+                    onChange={(e) => setRedemptionCode(e.target.value.toUpperCase())}
+                    placeholder="请输入兑换码（必填）"
+                    required
+                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-colors text-sm tracking-widest font-mono"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">兑换码由管理员提供，注册时必填</p>
+                </div>
+              </div>
+
+              {/* 专业版/旗舰版引导 */}
+              <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 space-y-2">
+                <p className="text-sm font-medium text-blue-900">需要专业版或旗舰版？</p>
+                <p className="text-xs text-gray-600">专业版和旗舰版由管理员线下开通，不支持自助注册。请联系客服或销售人员获取账号。</p>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-sky-600 hover:text-sky-700"
+                >
+                  咨询开通方案 →
+                </Link>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">手机号 <span className="text-gray-400">(选填)</span></label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="请输入手机号"
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-colors text-sm"
+                />
+              </div>
+
+              <label className="flex items-start gap-2 text-sm text-gray-600 mb-4 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-gray-300 text-sky-400 focus:ring-sky-400"
+                />
+                <span>
+                  我已阅读并同意
+                  <Link href="/terms" target="_blank" className="text-[#2B7DE9] hover:underline font-medium">《用户服务协议》</Link>
+                  和
+                  <Link href="/privacy" target="_blank" className="text-[#2B7DE9] hover:underline font-medium">《隐私政策》</Link>
+                </span>
+              </label>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">验证码</label>
+                <Captcha onValidate={setCaptchaValid} />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  上一步
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !agreed || !captchaValid}
+                  className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-sky-400 to-blue-800 text-white font-medium hover:from-blue-900 hover:to-blue-950 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md shadow-sky-400/25"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  {loading ? '注册中...' : '创建账号'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="mt-6 text-center text-sm text-gray-500">
+            已有账号？
+            <Link href="/login" className="text-blue-900 hover:text-blue-950 font-medium ml-1">
+              立即登录
+            </Link>
+          </div>
+          <div className="mt-3 text-center">
+            <Link
+              href="/intro/personal"
+              className="text-sm text-sky-600 hover:text-sky-700 font-medium inline-flex items-center gap-1"
+            >
+              了解产品方案 <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== src/app/(auth)/terms/page.tsx =====
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+
+export default function TermsPage() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-[#2B7DE9] hover:underline mb-6 text-base"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          返回
+        </Link>
+
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">用户服务协议</h1>
+        <p className="text-sm text-gray-500 mb-8">
+          服务提供方：职盈学海（品牌）/ 创始人（个人经营者）<br />
+          生效日期：2026年06月01日
+        </p>
+
+        <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8 space-y-8 text-gray-800 leading-relaxed text-[15px]">
+          {/* 第一章：服务说明 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">一、服务说明</h2>
+            <div className="space-y-3">
+              <p><strong>1.1</strong> 本平台为线上知识学习与管理工具服务平台，由职盈学海（品牌）/ 创始人（个人经营者）运营，向用户提供：在线课程、培训体系、实操模板、管理SOP、客服质检工具、KPI核算工具、排班工具、成本预警工具、AI辅助办公等线上数字化服务（以下统称"本服务"）。</p>
+              <p><strong>1.2</strong> 平台分为个人版、专业版、旗舰版，各版本功能范围及对应价格以平台页面展示为准。用户购买相应版本后，在服务期内享有该版本对应功能的使用权。</p>
+              <p><strong>1.3</strong> 平台有权根据业务发展需要，对服务内容进行更新、优化或调整，但不会实质性地降低用户已购版本的核心功能。</p>
+            </div>
+          </section>
+
+          {/* 第二章：课程内容与服务标准（新增） */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">二、课程内容与服务标准</h2>
+            <div className="space-y-3">
+              <p><strong>2.1 课程体系</strong>：本平台提供25课系统化课程内容，涵盖角色认知、目标管理、团队带教、业务落地四大模块，课程内容每季度更新一次，确保与行业实践保持同步。</p>
+              <p><strong>2.2 使用时长</strong>：用户在服务期内可无限次访问和使用课程内容，不受学习次数限制。</p>
+              <p><strong>2.3 服务可用性</strong>：平台年可用率不低于99%，如因计划维护需暂停服务，我们将提前24小时通知用户。</p>
+              <p><strong>2.4 售后响应</strong>：我们提供售后24小时响应服务，用户通过平台内帮助中心或联系邮箱提交的问题，将在24小时内获得初步响应。</p>
+            </div>
+          </section>
+
+          {/* 第三章：故障修复与服务保障（新增） */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">三、故障修复与服务保障</h2>
+            <div className="space-y-3">
+              <p><strong>3.1 故障分级与修复时限</strong>：平台对服务故障实行分级响应与修复机制：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li><strong>一般故障</strong>（部分功能异常但不影响核心使用）：48小时内修复</li>
+                <li><strong>严重故障</strong>（核心功能不可用）：24小时内修复</li>
+                <li><strong>紧急故障</strong>（全部服务不可用或数据安全风险）：12小时内修复</li>
+              </ul>
+              <p><strong>3.2 服务中断补偿</strong>：如因平台自身系统故障导致服务中断超过连续72小时，用户可申请按剩余服务天数等比例延长服务期限。申请方式：通过平台内帮助中心或联系邮箱提交申请，我们将在5个工作日内核实并处理。</p>
+              <p><strong>3.3 维护通知</strong>：计划性维护将提前24小时通过平台内通知告知用户；紧急维护将在恢复服务后24小时内说明原因和影响范围。</p>
+            </div>
+          </section>
+
+          {/* 第四章：合规与知识产权（原第二章） */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">四、合规与知识产权</h2>
+            <div className="space-y-3">
+              <p><strong>4.1</strong> 本平台提供的全部课程内容、培训体系、实操模板、管理SOP、工具逻辑等，均为服务方独立原创或经合法授权获得，受《中华人民共和国著作权法》及相关法律法规保护。</p>
+              <p><strong>4.2</strong> 用户不得以任何形式复制、翻拍、录屏、传播、分销、二次售卖、搬运本平台内容。一经发现上述行为，平台有权立即封禁违规账号、终止服务，且不予退还任何费用，并保留追究法律责任的权利。</p>
+              <p><strong>4.3</strong> 本平台不对用户使用服务后的升职、业绩、收益、学习效果等做任何承诺或保证。平台提供的是学习工具和管理辅助服务，最终效果取决于用户个人的学习能力、执行力和工作环境等多种因素。</p>
+            </div>
+          </section>
+
+          {/* 第五章：付费与退款（重写） */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">五、付费与退款</h2>
+            <div className="space-y-3">
+              <p><strong>5.1 用户原因退款</strong>：根据《中华人民共和国消费者权益保护法》第二十五条规定，在线下载或者消费者拆封的音像制品、计算机软件等数字化商品不适用七天无理由退货。本平台提供的在线数字化服务属于此类商品，因用户自身原因（包括但不限于个人需求变化、学习时间不足、主观不满意等）申请退款的，一律不予退还。</p>
+              <p><strong>5.2 平台问题退款</strong>：如因平台自身系统故障或服务质量问题导致用户无法正常使用核心功能，且经核实属于平台责任的，用户可申请按剩余服务天数等比例退还费用。退款金额 = 已支付金额 ×（剩余服务天数 / 总服务天数）。</p>
+              <p><strong>5.3 服务到期</strong>：服务到期后，如用户未订阅，平台有权暂停该账号的付费功能使用权限，但不会删除用户的历史数据。用户可在重新订阅后恢复使用。</p>
+              <p><strong>5.4 价格调整</strong>：订阅价格以订阅时平台页面展示的价格为准，平台有权根据运营成本调整价格，调整前已购买的套餐不受影响。</p>
+            </div>
+          </section>
+
+          {/* 第六章：账号使用规则与责任 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">六、账号使用规则与责任</h2>
+            <div className="space-y-3">
+              <p><strong>6.1</strong> 用户注册时须提供真实、准确的手机号码等信息，并对账号安全承担全部责任。因用户自身原因（如密码泄露、设备未妥善保管等）导致账号泄露、被盗等，平台不承担相应责任，但将协助用户进行账号找回。</p>
+              <p><strong>6.2</strong> 账号仅限本人单人使用，严禁共享、转借、出租、售卖或供多人共用。一经发现，平台有权封禁该账号并终止服务，不予退款。</p>
+              <p><strong>6.3</strong> 用户在平台录入的各类工作数据（如员工信息、业绩数据、成本数据等）由用户全权负责其真实性与合法性，平台仅提供数据存储、计算与展示工具服务，不对用户数据内容承担审查或担保责任。</p>
+              <p><strong>6.4</strong> 用户因违反本协议或相关法律法规而导致的任何损失，由用户自行承担。</p>
+            </div>
+          </section>
+
+          {/* 第七章：用户禁止行为 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">七、用户禁止行为</h2>
+            <div className="space-y-3">
+              <p><strong>7.1</strong> 禁止利用本平台从事任何违反法律法规的活动，包括但不限于传播违法信息、侵犯他人权益等。</p>
+              <p><strong>7.2</strong> 禁止通过技术手段攻击、破解、反向工程本平台系统，或干扰平台的正常运行。</p>
+              <p><strong>7.3</strong> 禁止复制、翻拍、录屏、传播、分销、二次售卖、搬运本平台的任何课程内容、模板或工具。</p>
+              <p><strong>7.4</strong> 禁止在平台内发布虚假信息、垃圾广告、恶意评论或其他干扰其他用户正常使用的行为。</p>
+              <p><strong>7.5</strong> 禁止利用平台工具收集、存储、处理他人个人信息而未经授权。用户须确保其录入数据符合相关法律法规要求。</p>
+            </div>
+          </section>
+
+          {/* 第八章：免责与责任边界 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">八、免责与责任边界</h2>
+            <div className="space-y-3">
+              <p><strong>8.1</strong> 本平台提供的学习内容和工具仅作辅助参考之用，不构成任何形式的商业建议、法律意见或专业咨询。用户应根据自身情况独立判断和决策。</p>
+              <p><strong>8.2 不可抗力免责</strong>：因不可抗力（包括但不限于自然灾害、政策变化、网络攻击等）导致服务中断或数据丢失，平台不承担赔偿责任，但将在合理时间内尽最大努力恢复服务并降低对用户的影响。</p>
+              <p><strong>8.3 用户自身过错免责</strong>：因用户自身操作不当、密码泄露、设备问题等用户方原因导致的损失，平台不承担责任，但将在能力范围内提供合理协助。</p>
+              <p><strong>8.4 第三方原因免责</strong>：本平台可能包含指向第三方网站或服务的链接，用户访问第三方内容的风险由用户自行承担。因第三方服务变更、中断或数据泄露等导致的损失，平台不承担责任，但将在知悉后及时提醒用户。</p>
+              <p><strong>8.5 服务保障承诺</strong>：平台将持续优化技术架构和运维体系，尽力保障服务稳定运行，但不对服务绝对无中断、无故障做承诺。如因平台自身系统故障导致服务中断超过连续72小时，用户可按本协议第三条第3.2款申请等比例延长服务期限。</p>
+              <p><strong>8.6 责任底线</strong>：本条免责条款不适用于因平台违法违规操作、故意或重大过失导致用户直接财产损失的情形。在此类情况下，平台依法承担相应责任。</p>
+              <p><strong>8.7</strong> 平台不对AI辅助工具生成的内容准确性做绝对保证，AI输出内容仅供用户参考，用户应自行核实后使用。</p>
+            </div>
+          </section>
+
+          {/* 第九章：知识产权说明 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">九、知识产权说明</h2>
+            <div className="space-y-3">
+              <p><strong>9.1</strong> 本平台的界面设计、交互逻辑、课程内容、模板体系、品牌标识等全部知识产权归服务方所有，受《中华人民共和国著作权法》等法律法规保护。</p>
+              <p><strong>9.2</strong> 本平台所使用的系统开发框架、第三方插件及工具均通过正规商用授权渠道获取，不存在知识产权侵权风险。</p>
+              <p><strong>9.3</strong> 未经服务方书面许可，任何单位和个人不得以任何方式复制、修改、传播本平台的任何部分，否则将依法追究其法律责任。</p>
+              <p><strong>9.4</strong> 用户在平台内自行创建、录入的内容（如自定义话术、工作数据、笔记等）的知识产权归用户所有。平台仅在提供服务的必要范围内使用这些内容，不会将其用于其他商业目的。</p>
+            </div>
+          </section>
+
+          {/* 第十章：协议变更规则（更新：提前7天通知） */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">十、协议变更规则</h2>
+            <div className="space-y-3">
+              <p>服务方有权根据法律法规变化、业务发展需要等原因对本协议进行修订。修订后的协议将在平台页面公布。</p>
+              <p>对于重大变更（如服务内容调整、费用结构变更、责任条款修改等），我们将提前7天通过平台内通知或其他合理方式告知您，您有权在变更生效前选择是否继续使用本服务。</p>
+              <p>如您在协议修订后继续使用本平台服务，视为您同意修订后的协议。如您不同意修订内容，有权停止使用本平台服务并申请注销账号。</p>
+            </div>
+          </section>
+
+          {/* 第十一章：争议解决 */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">十一、争议解决</h2>
+            <div className="space-y-3">
+              <p>因本协议或本平台服务引起的或与之相关的任何争议，双方应首先友好协商解决。协商不成的，任何一方均有权向服务方所在地有管辖权的人民法院提起诉讼。</p>
+              <p>本协议的订立、执行和解释均适用中华人民共和国法律。</p>
+            </div>
+          </section>
+
+          {/* 第十二章：联系方式（更新：邮箱） */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">十二、联系方式</h2>
+            <div className="space-y-3">
+              <p>如您对本协议有任何疑问或需要咨询，可通过以下方式联系我们：</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>平台内帮助中心在线反馈</li>
+                <li>电子邮箱：1051202571@qq.com</li>
+              </ul>
+              <p>我们将在收到您的反馈后15个工作日内予以回复。</p>
+            </div>
+          </section>
+        </div>
+
+（中间代码省略）
+
+  for (const [key, entry] of userStore) {
+    if (now > entry.resetAt) userStore.delete(key);
+  }
+}, 5 * 60 * 1000);
+
+// ─── Rate limit configs ───
+interface RateLimitRule {
+  windowMs: number;   // time window in milliseconds
+  maxRequests: number; // max requests per window
+}
+
+const AUTH_LIMIT: RateLimitRule = { windowMs: 5 * 60 * 1000, maxRequests: 10 };       // /api/auth/* 5min/10次
+const REGISTER_LIMIT: RateLimitRule = { windowMs: 5 * 60 * 1000, maxRequests: 5 };    // /api/auth/register 5min/5次
+const AI_CHECKUP_LIMIT: RateLimitRule = { windowMs: 24 * 60 * 60 * 1000, maxRequests: 20 }; // /api/ai-checkup/* daily/20次
+
+function getClientIP(request: NextRequest): string {
+  // Try common proxy headers first
+  const xff = request.headers.get('x-forwarded-for');
+  if (xff) return xff.split(',')[0].trim();
+  const realIp = request.headers.get('x-real-ip');
+  if (realIp) return realIp.trim();
+  return 'unknown';
+}
+
+function checkRateLimit(
+  store: Map<string, RateLimitEntry>,
+  key: string,
+  windowMs: number,
+  maxRequests: number,
+): { allowed: boolean; remaining: number; resetAt: number } {
+  const now = Date.now();
+  const entry = store.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    // New window
+    const newEntry: RateLimitEntry = { count: 1, resetAt: now + windowMs };
+    store.set(key, newEntry);
+    return { allowed: true, remaining: maxRequests - 1, resetAt: newEntry.resetAt };
+  }
+
+  if (entry.count >= maxRequests) {
+    return { allowed: false, remaining: 0, resetAt: entry.resetAt };
+  }
+
+  entry.count += 1;
+  return { allowed: true, remaining: maxRequests - entry.count, resetAt: entry.resetAt };
+}
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // ─── Rate limiting for /api/auth/register (stricter) ───
+  if (pathname === '/api/auth/register') {
+    const ip = getClientIP(request);
+    const result = checkRateLimit(ipStore, `register:${ip}`, REGISTER_LIMIT.windowMs, REGISTER_LIMIT.maxRequests);
+    if (!result.allowed) {
+      return NextResponse.json(
+        { error: '注册请求过于频繁，请5分钟后再试' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((result.resetAt - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+          },
+        },
+      );
+    }
+  }
+
+  // ─── Rate limiting for /api/auth/* (except register which has its own limit) ───
+  if (pathname.startsWith('/api/auth/') && pathname !== '/api/auth/register') {
+    const ip = getClientIP(request);
+    const result = checkRateLimit(ipStore, `auth:${ip}`, AUTH_LIMIT.windowMs, AUTH_LIMIT.maxRequests);
+    if (!result.allowed) {
+      return NextResponse.json(
+        { error: '登录请求过于频繁，请5分钟后再试' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((result.resetAt - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+          },
+        },
+      );
+    }
+  }
+
+  // ─── Rate limiting for /api/ai-checkup/* (per user, daily) ───
+  if (pathname.startsWith('/api/ai-checkup/')) {
+    // User ID from header (set by client after auth), fallback to IP
+    const userId = request.headers.get('x-user-id') || getClientIP(request);
+    const result = checkRateLimit(userStore, `ai:${userId}`, AI_CHECKUP_LIMIT.windowMs, AI_CHECKUP_LIMIT.maxRequests);
+    if (!result.allowed) {
+      return NextResponse.json(
+        { error: '今日AI体检次数已用完，明天再来吧' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((result.resetAt - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Limit': String(AI_CHECKUP_LIMIT.maxRequests),
+          },
+        },
+      );
+    }
+    // Add rate limit headers to successful responses
+    const response = NextResponse.next();
+    response.headers.set('X-RateLimit-Remaining', String(result.remaining));
+    response.headers.set('X-RateLimit-Limit', String(AI_CHECKUP_LIMIT.maxRequests));
+    return response;
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/api/auth/:path*', '/api/ai-checkup/:path*'],
+};
+
+// ===== src/server.ts =====
+import { createServer } from 'http';
+import { parse } from 'url';
+import next from 'next';
+
+const dev = process.env.COZE_PROJECT_ENV !== 'PROD';
+const hostname = process.env.HOSTNAME || 'localhost';
+const port = parseInt(process.env.PORT || '5000', 10);
+
+// Security headers applied to all responses
+const SECURITY_HEADERS: Record<string, string> = {
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+};
+
+function getSupabaseHost(): string {
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    return new URL(url).hostname;
+  } catch {
+    return '*.supabase.co';
+  }
+}
+
+function getCspHeader(): string {
+  const supabaseHost = getSupabaseHost();
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.cn",
+    "font-src 'self' https://fonts.gstatic.cn",
+    "img-src 'self' data: blob: https:",
+    `connect-src 'self' https://${supabaseHost} wss://${supabaseHost}`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ');
+}
+
+// Create Next.js app
+const app = next({ dev, hostname, port });
+const handle = app.getRequestHandler();
+
+app.prepare().then(() => {
+  const server = createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url!, true);
+      // Inject security headers before handling request
+      const originalSetHeader = res.setHeader.bind(res);
+      let headersInjected = false;
+      const injectSecurityHeaders = () => {
+        if (headersInjected) return;
+        headersInjected = true;
+        for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+          try { originalSetHeader(key, value); } catch { /* already sent */ }
+        }
+        try { originalSetHeader('Content-Security-Policy', getCspHeader()); } catch { /* already sent */ }
+      };
+
+      // Override writeHead to inject headers before first write
+      const originalWriteHead = res.writeHead.bind(res);
+      res.writeHead = (...args: unknown[]) => {
+        injectSecurityHeaders();
+        return originalWriteHead(...args as Parameters<typeof originalWriteHead>);
+      };
+
+      // Also hook into setHeader to detect when headers are about to be sent
+      res.setHeader = (name: string, value: string | string | number) => {
+        return originalSetHeader(name, value);
+      };
+
+      await handle(req, res, parsedUrl);
+      // Ensure headers are injected even if writeHead wasn't called explicitly
+      injectSecurityHeaders();
+    } catch (err) {
+      console.error('Error occurred handling', req.url, err);
+      res.statusCode = 500;
+      res.end('Internal server error');
+    }
+  });
+  server.once('error', err => {
+    console.error(err);
+    process.exit(1);
+  });
+  server.listen(port, () => {
+    console.log(
+      `> Server listening at http://${hostname}:${port} as ${
+        dev ? 'development' : process.env.COZE_PROJECT_ENV
+      }`,
+    );
+  });
+});
+
+// ===== src/storage/database/shared/relations.ts =====
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { relations } from "drizzle-orm/relations";
+import {  } from "./schema";
+
+
+// ===== src/storage/database/shared/schema.ts =====
+import { pgTable, serial, varchar, text, integer, boolean, timestamp, numeric, date, jsonb, index, uniqueIndex, uuid } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
+
+export const healthCheck = pgTable("health_check", {
+	id: serial().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+});
+
+// 5. SOP流程模板表
+export const sopTemplates = pgTable(
+	"sop_templates",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		category: text("category").notNull(),
+		name: text("name").notNull(),
+		scenario: text("scenario"),
+		steps_json: text("steps_json").default('[]'),
+		role: text("role").default('售中客服'),
+		is_preset: boolean("is_preset").default(false),
+		needs_update: boolean("needs_update").default(false),
+		version: integer("version").default(1),
+		updated_by: text("updated_by"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+			industry: text("industry"),
+			team_size: text("team_size"),
+			gender: text("gender").default('保密'),
+			bio: text("bio").default(''),
+	},
+	(table) => [
+		index("idx_sop_templates_company_id").on(table.company_id),
+		index("idx_sop_templates_category").on(table.category),
+	]
+);
+
+export const ruleUpdates = pgTable(
+	"rule_updates",
+	{
+		id: varchar("id", { length: 36 }).primaryKey(),
+		companyId: varchar("company_id", { length: 36 }),
+		platform: varchar("platform", { length: 20 }).notNull(),
+		title: varchar("title", { length: 300 }).notNull(),
+		summary: text("summary"),
+		actionAdvice: text("action_advice"),
+		effectiveDate: date("effective_date"),
+		sourceUrl: text("source_url"),
+		isActive: boolean("is_active").default(true).notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_rule_updates_platform").on(table.platform),
+		index("idx_rule_updates_company").on(table.companyId),
+	]
+);
+
+export const industryTrends = pgTable(
+	"industry_trends",
+	{
+		id: varchar("id", { length: 36 }).primaryKey(),
+		companyId: varchar("company_id", { length: 36 }),
+		category: varchar("category", { length: 20 }).notNull(),
+		trend: varchar("trend", { length: 10 }).notNull(),
+		title: varchar("title", { length: 300 }).notNull(),
+		keyData: text("key_data"),
+		advice: varchar("advice", { length: 20 }),
+		adviceDetail: text("advice_detail"),
+		dataSource: varchar("data_source", { length: 100 }),
+		isActive: boolean("is_active").default(true).notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_industry_trends_category").on(table.category),
+		index("idx_industry_trends_company").on(table.companyId),
+	]
+);
+
+export const userReadLog = pgTable(
+	"user_read_log",
+	{
+		id: varchar("id", { length: 36 }).primaryKey(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		itemType: varchar("item_type", { length: 30 }).notNull(),
+		itemId: varchar("item_id", { length: 36 }).notNull(),
+		readAt: timestamp("read_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_user_read_log_user").on(table.userId),
+	]
+);
+
+// 22. 售后成本记录表
+export const costRecords = pgTable(
+	"cost_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		record_date: date("record_date").notNull(),
+		total_cost: numeric("total_cost", { precision: 10, scale: 2 }).notNull(),
+		work_order_count: integer("work_order_count"),
+		refund_count: integer("refund_count"),
+		note: text("note"),
+		created_by: varchar("created_by", { length: 36 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_cost_records_company").on(table.company_id),
+		index("idx_cost_records_date").on(table.record_date),
+	]
+);
+
+// 1. 企业表
+export const companies = pgTable(
+	"companies",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		name: text("name").notNull(),
+		industry: text("industry").default('电商'),
+		team_size: integer("team_size").default(1),
+		contact_name: text("contact_name"),
+		contact_phone: text("contact_phone"),
+		plan: text("plan").default('basic'),
+		plan_start: timestamp("plan_start", { withTimezone: true }),
+		plan_end: timestamp("plan_end", { withTimezone: true }),
+		plan_period: text("plan_period").default('monthly'),
+		plan_expires_at: timestamp("plan_expires_at", { withTimezone: true }),
+		ai_credits_remaining: integer("ai_credits_remaining").default(3),
+		service_level: text("service_level").default('self'),
+		status: text("status").default('active'),
+		brand_name: text("brand_name"),
+		categories: text("categories").default('[]'),
+		price_range: text("price_range"),
+		platforms: text("platforms").default('[]'),
+		daily_consultations: text("daily_consultations"),
+		pain_points: text("pain_points").default('[]'),
+		supply_type: text("supply_type"),
+		install_service: boolean("install_service").default(false),
+		return_policy: text("return_policy"),
+		profile_completed: boolean("profile_completed").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_companies_status").on(table.status),
+		index("idx_companies_plan").on(table.plan),
+	]
+);
+
+// 2. 用户表
+// role: admin | enterprise_admin | enterprise_manager | staff
+// user_type: small | manager | premium
+export const users = pgTable(
+	"users",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		email: text("email").notNull().unique(),
+		password_hash: text("password_hash"),
+		display_name: text("display_name"),
+		role: text("role").default('staff'),
+		user_type: text("user_type").default('small'),
+		position: text("position"),
+		ai_credits_remaining: integer("ai_credits_remaining").default(3),
+		remaining_credits: integer("remaining_credits").default(3),
+		status: text("status").default('active'),
+		last_login_at: timestamp("last_login_at", { withTimezone: true }),
+		industry_profile_completed: boolean("industry_profile_completed").default(false),
+		industry: varchar("industry", { length: 50 }),
+		expires_at: timestamp("expires_at", { withTimezone: true }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_users_company_id").on(table.company_id),
+		index("idx_users_role").on(table.role),
+		index("idx_users_status").on(table.status),
+	]
+);
+
+	// 兑换码表
+	export const redemptionCodes = pgTable(
+		"redemption_codes",
+		{
+			id: uuid("id").primaryKey().defaultRandom(),
+			code: varchar("code", { length: 20 }).notNull().unique(),
+			plan_type: varchar("plan_type", { length: 30 }).notNull().default('personal_user'),
+			is_used: boolean("is_used").notNull().default(false),
+			used_by: varchar("used_by", { length: 36 }),
+			used_at: timestamp("used_at", { withTimezone: true }),
+			created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+			created_by: varchar("created_by", { length: 36 }),
+			expires_at: timestamp("expires_at", { withTimezone: true }),
+		},
+		(table) => [
+			index("idx_redemption_codes_code").on(table.code),
+			index("idx_redemption_codes_is_used").on(table.is_used),
+		]
+	);
+
+// 用户行业档案表
+export const userIndustryProfiles = pgTable(
+	"user_industry_profiles",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		industry: varchar("industry", { length: 50 }).notNull(),
+		main_product: text("main_product").notNull(),
+		material: text("material"),
+		team_size: varchar("team_size", { length: 20 }).notNull(),
+		profile_data: jsonb("profile_data"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_user_industry_profiles_user_id").on(table.user_id),
+	]
+);
+
+// 3. 客服表
+export const agents = pgTable(
+	"agents",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		name: text("name").notNull(),
+		employee_id: text("employee_id"),
+		hire_date: timestamp("hire_date", { withTimezone: true }),
+		position: text("position").default('售中客服'),
+		training_stage: text("training_stage").default('基础'),
+		status: text("status").default('在职'),
+		role_tag: text("role_tag").default('售前'),
+		skill_tags: text("skill_tags").default(sql`{} `),
+		user_id: varchar("user_id", { length: 36 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_agents_company_id").on(table.company_id),
+		index("idx_agents_status").on(table.status),
+		index("idx_agents_training_stage").on(table.training_stage),
+		index("idx_agents_user_id").on(table.user_id),
+	]
+);
+
+// 4. 诊断脚本表
+export const scripts = pgTable(
+	"scripts",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		category: text("category").notNull(),
+		phenomenon: text("phenomenon").notNull(),
+		diagnosis: text("diagnosis").notNull(),
+		solution: text("solution").notNull(),
+		detail: text("detail"),
+		sort_order: integer("sort_order").default(0),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_scripts_category").on(table.category),
+	]
+);
+
+// 6. AI问题解决记录
+export const problemSolutions = pgTable(
+	"problem_solutions",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		query: text("query").notNull(),
+		category: varchar("category", { length: 50 }),
+		judgment: text("judgment"),
+		steps: text("steps"),
+		script: text("script"),
+		solution_used: boolean("solution_used").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_problem_solutions_company").on(table.company_id),
+		index("idx_problem_solutions_user").on(table.user_id),
+	]
+);
+
+// 7. 标准话术库
+export const phraseLibrary = pgTable(
+	"phrase_library",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		category: varchar("category", { length: 50 }).notNull(),
+		content: text("content").notNull(),
+		is_preset: boolean("is_preset").default(true),
+		use_count: integer("use_count").default(0),
+		created_by: varchar("created_by", { length: 36 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_phrase_library_category").on(table.category),
+		index("idx_phrase_library_company").on(table.company_id),
+	]
+);
+
+// 8. 培训进度
+export const trainingProgress = pgTable(
+	"training_progress",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		module_id: varchar("module_id", { length: 50 }).notNull(),
+		current_step: integer("current_step").default(0),
+		completed: boolean("completed").default(false),
+		completed_at: timestamp("completed_at", { withTimezone: true }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("idx_training_progress_user_module").on(table.user_id, table.module_id),
+	]
+);
+
+// 9. 考核记录
+export const examRecords = pgTable(
+	"exam_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		score: integer("score").notNull(),
+		answers: text("answers").default('[]'),
+		passed: boolean("passed").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_exam_records_user").on(table.user_id),
+	]
+);
+
+// 10. 入职流程记录
+export const onboardingRecords = pgTable(
+	"onboarding_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		agent_id: varchar("agent_id", { length: 36 }),
+		step1_status: varchar("step1_status", { length: 20 }).default('待分配'),
+		step2_status: varchar("step2_status", { length: 20 }).default('未开始'),
+		step3_status: varchar("step3_status", { length: 20 }).default('未开始'),
+		step4_status: varchar("step4_status", { length: 20 }).default('未开始'),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("idx_onboarding_user").on(table.user_id),
+		index("idx_onboarding_company").on(table.company_id),
+	]
+);
+
+// 11. KPI方案
+export const kpiPlans = pgTable(
+	"kpi_plans",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		name: varchar("name", { length: 100 }).notNull(),
+		team_size: integer("team_size"),
+		presale_ratio: integer("presale_ratio").default(50),
+		aftersale_ratio: integer("aftersale_ratio").default(50),
+		daily_orders: integer("daily_orders"),
+		team_stage: varchar("team_stage", { length: 20 }),
+		focus: text("focus").default('[]'),
+		metrics: text("metrics").default('[]'),
+		created_by: varchar("created_by", { length: 36 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_kpi_plans_company").on(table.company_id),
+	]
+);
+
+// 12. 趋势日报
+export const dailyReports = pgTable(
+	"daily_reports",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		report_date: date("report_date").notNull(),
+		type: varchar("type", { length: 20 }).notNull(),
+		title: text("title").notNull(),
+		summary: text("summary"),
+		action_individual: text("action_individual"),
+		action_staff: text("action_staff"),
+		action_admin: text("action_admin"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_daily_reports_date").on(table.report_date),
+		index("idx_daily_reports_type").on(table.type),
+	]
+);
+
+// 13. 日报已阅记录
+export const reportViews = pgTable(
+	"report_views",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		report_id: varchar("report_id", { length: 36 }).notNull(),
+		viewed_at: timestamp("viewed_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		uniqueIndex("idx_report_views_user_report").on(table.user_id, table.report_id),
+	]
+);
+
+// 14. 订阅/会员
+export const subscriptions = pgTable(
+	"subscriptions",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		plan: varchar("plan", { length: 20 }).notNull().default('basic'),
+		plan_period: varchar("plan_period", { length: 20 }).default('monthly'),
+		plan_start: date("plan_start"),
+		plan_end: date("plan_end"),
+		status: varchar("status", { length: 20 }).default('active'),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("idx_subscriptions_company").on(table.company_id),
+	]
+);
+
+// 15. 充值日志
+export const rechargeLogs = pgTable(
+	"recharge_logs",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		user_id: varchar("user_id", { length: 36 }),
+		user_name: varchar("user_name", { length: 100 }),
+		plan: varchar("plan", { length: 20 }).notNull(),
+		period: varchar("period", { length: 20 }).notNull(),
+		amount: numeric("amount", { precision: 10, scale: 2 }),
+		operator_id: varchar("operator_id", { length: 36 }),
+		operator_name: varchar("operator_name", { length: 100 }),
+		remark: text("remark"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_recharge_logs_company").on(table.company_id),
+	]
+);
+
+// 17. 课程表
+export const courses = pgTable(
+	"courses",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		title: text("title").notNull(),
+		description: text("description"),
+		category: text("category"),
+		duration_minutes: integer("duration_minutes").default(30),
+		difficulty: text("difficulty").default('基础'),
+		is_preset: boolean("is_preset").default(false),
+		feishu_doc_url: varchar("feishu_doc_url", { length: 500 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_courses_company").on(table.company_id),
+	]
+);
+
+// 18. 学习记录表
+export const learningRecords = pgTable(
+	"learning_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		course_id: varchar("course_id", { length: 36 }).notNull(),
+		progress: integer("progress").default(0),
+		completed: boolean("completed").default(false),
+		score: integer("score"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_learning_records_user").on(table.user_id),
+		index("idx_learning_records_course").on(table.course_id),
+	]
+);
+
+// 19. KPI记录表
+export const kpiRecords = pgTable(
+	"kpi_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		period: text("period").notNull(),
+		metrics: text("metrics"),
+		score: integer("score"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_kpi_records_company").on(table.company_id),
+		index("idx_kpi_records_user").on(table.user_id),
+	]
+);
+
+// 20. 订单表
+export const orders = pgTable(
+	"orders",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		plan: text("plan").notNull(),
+		amount: numeric("amount", { precision: 10, scale: 2 }),
+		status: text("status").default('pending'),
+		payment_method: text("payment_method"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_orders_company").on(table.company_id),
+		index("idx_orders_user").on(table.user_id),
+	]
+);
+
+// 21. 通知表
+export const notifications = pgTable(
+	"notifications",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		user_id: varchar("user_id", { length: 36 }),
+		type: text("type").notNull(),
+		title: text("title").notNull(),
+		content: text("content"),
+		is_read: boolean("is_read").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_notifications_user").on(table.user_id),
+		index("idx_notifications_company").on(table.company_id),
+	]
+);
+
+export const customKnowledge = pgTable(
+	"custom_knowledge",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull().references(() => companies.id),
+		title: varchar("title", { length: 200 }).notNull(),
+		content: text("content").notNull(),
+		category: varchar("category", { length: 50 }).notNull().default("other"),
+		tags: text("tags").default("{}"),
+		is_active: boolean("is_active").default(true),
+		created_by: varchar("created_by", { length: 36 }).references(() => users.id),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_custom_knowledge_company").on(table.company_id),
+		index("idx_custom_knowledge_category").on(table.category),
+	]
+);
+
+// 16. 售后管理表（电商专版）
+export const customerRecords = pgTable(
+	"customer_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		user_id: varchar("user_id", { length: 36 }),
+		customer_name: varchar("customer_name", { length: 100 }),
+		customer_phone: varchar("customer_phone", { length: 20 }),
+		customer_type: varchar("customer_type", { length: 10 }).default('C端'),
+		source: varchar("source", { length: 20 }).default('电商平台'),
+		source_platform: varchar("source_platform", { length: 20 }).default('other'),
+		status: varchar("status", { length: 20 }).default('未服务'),
+		notes: text("notes"),
+		last_query: text("last_query"),
+		last_query_at: timestamp("last_query_at", { withTimezone: true }),
+		service_count: integer("service_count").default(0),
+		risk_tags: text("risk_tags").default('[]'),
+		product_model: varchar("product_model", { length: 100 }).default(''),
+		pit_distance: varchar("pit_distance", { length: 10 }).default('unknown'),
+		water_pressure: varchar("water_pressure", { length: 20 }).default('normal'),
+		follow_up_summary: text("follow_up_summary").default(''),
+		related_order_id: varchar("related_order_id", { length: 100 }).default(''),
+		platform_id: varchar("platform_id", { length: 100 }).default(''),
+		// P0 新增字段
+		order_type: varchar("order_type", { length: 30 }).default(''),
+		sub_type: varchar("sub_type", { length: 30 }).default(''),
+		progress: varchar("progress", { length: 30 }).default(''),
+		assignee_id: varchar("assignee_id", { length: 36 }).default(''),
+		assign_status: varchar("assign_status", { length: 20 }).default('未分配'),
+		promised_deadline: timestamp("promised_deadline", { withTimezone: true }),
+		completed_at: timestamp("completed_at", { withTimezone: true }),
+		first_response_at: timestamp("first_response_at", { withTimezone: true }),
+		customer_demand: varchar("customer_demand", { length: 30 }).default(''),
+		final_solution: varchar("final_solution", { length: 30 }).default(''),
+		closure_result: varchar("closure_result", { length: 30 }).default(''),
+		created_by: varchar("created_by", { length: 36 }).default(''),
+		tags: jsonb("tags").default(sql`'[]'::jsonb`),
+		// P1 售后专属字段
+		actual_water_pressure: varchar("actual_water_pressure", { length: 20 }).default(''),
+		evidence_urls: jsonb("evidence_urls").default(sql`'[]'::jsonb`),
+		compensation_amount: numeric("compensation_amount", { precision: 10, scale: 2 }).default('0'),
+		replacement_parts: jsonb("replacement_parts").default(sql`'[]'::jsonb`),
+		installer_name: varchar("installer_name", { length: 50 }).default(''),
+		// P1 售前专属字段
+		house_pit_distance: varchar("house_pit_distance", { length: 20 }).default(''),
+		house_water_pressure: varchar("house_water_pressure", { length: 30 }).default(''),
+		install_scenario: varchar("install_scenario", { length: 30 }).default(''),
+		purchase_intent: varchar("purchase_intent", { length: 20 }).default(''),
+		responsibility: varchar("responsibility", { length: 20 }).default(''),
+		isStaffCaused: boolean("is_staff_caused").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_customer_records_company").on(table.company_id),
+		index("idx_customer_records_user").on(table.user_id),
+		index("idx_customer_records_source_platform").on(table.source_platform),
+		index("idx_customer_records_related_order_id").on(table.related_order_id),
+	]
+);
+
+export const courseLessons = pgTable("course_lessons", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		stage: integer("stage").notNull(),
+		lessonNumber: integer("lesson_number").notNull(),
+		title: text("title").notNull(),
+		coreContent: text("core_content").notNull().default(''),
+		learningOutcome: text("learning_outcome").notNull().default(''),
+		exercise: text("exercise").notNull().default(''),
+		template: text("template").notNull().default(''),
+		durationMinutes: integer("duration_minutes").notNull().default(5),
+		videoUrl: varchar("video_url", { length: 500 }).notNull().default(''),
+		videoDuration: varchar("video_duration", { length: 20 }).notNull().default(''),
+		isPublished: boolean("is_published").default(true),
+		sortOrder: integer("sort_order").notNull().default(0),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_course_lessons_stage").on(table.stage, table.sortOrder),
+	]
+);
+
+export const userCourseProgress = pgTable("user_course_progress", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		lessonId: uuid("lesson_id").notNull().references(() => courseLessons.id, { onDelete: 'cascade' }),
+		status: varchar("status", { length: 20 }).notNull().default('not_started'),
+		completedAt: timestamp("completed_at", { withTimezone: true }),
+		exerciseSubmitted: boolean("exercise_submitted").default(false),
+		notes: text("notes").default(""),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_user_course_progress_user").on(table.userId),
+	]
+);
+
+export const dailyPractice = pgTable("daily_practice", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		lessonNumber: varchar("lesson_number", { length: 10 }).notNull(),
+		question: text("question").notNull(),
+		questionType: varchar("question_type", { length: 20 }).notNull().default('scenario'),
+		options: jsonb("options"),
+		userAnswer: text("user_answer"),
+		isCorrect: boolean("is_correct"),
+		aiFeedback: text("ai_feedback"),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_daily_practice_user").on(table.userId),
+	]
+);
+
+export const practicalTasks = pgTable("practical_tasks", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		lessonNumber: varchar("lesson_number", { length: 10 }).notNull(),
+		taskType: varchar("task_type", { length: 20 }).notNull().default('text_input'),
+		taskContent: text("task_content").notNull(),
+		userSubmission: text("user_submission"),
+		aiScore: integer("ai_score"),
+		aiFeedback: text("ai_feedback"),
+		submittedAt: timestamp("submitted_at", { withTimezone: true }),
+	},
+	(table) => [
+		index("idx_practical_tasks_user").on(table.userId),
+		index("idx_practical_tasks_lesson").on(table.userId, table.lessonNumber),
+	]
+);
+
+export const wrongQuestions = pgTable("wrong_questions", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		lessonNumber: varchar("lesson_number", { length: 10 }).notNull(),
+		question: text("question").notNull(),
+		questionType: varchar("question_type", { length: 20 }).notNull().default('scenario'),
+		options: text("options"),
+		userAnswer: text("user_answer"),
+		correctAnswer: text("correct_answer"),
+		aiAnalysis: text("ai_analysis"),
+		reviewed: boolean("reviewed").notNull().default(false),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_wrong_questions_user").on(table.userId),
+		index("idx_wrong_questions_reviewed").on(table.userId, table.reviewed),
+	]
+);
+
+export const certificates = pgTable("certificates", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		certificateCode: varchar("certificate_code", { length: 30 }).notNull().unique(),
+		userName: varchar("user_name", { length: 50 }).notNull(),
+		completedAt: timestamp("completed_at", { withTimezone: true }).notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_certificates_code").on(table.certificateCode),
+		index("idx_certificates_user").on(table.userId),
+	]
+);
+
+export const schedules = pgTable("schedules", {
+			id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+			companyId: varchar("company_id", { length: 36 }).notNull(),
+			agentId: varchar("agent_id", { length: 36 }).notNull(),
+			shiftDate: date("shift_date").notNull(),
+			shiftType: text("shift_type").default('早班'),
+			createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+			updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+		},
+		(table) => [
+			index("idx_schedules_company_date").on(table.companyId, table.shiftDate),
+		]
+	);
+
+export const courseHighlights = pgTable("course_highlights", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		companyId: varchar("company_id", { length: 36 }),
+		courseId: varchar("course_id", { length: 20 }).notNull(),
+		highlightedText: text("highlighted_text").notNull(),
+		pagePath: varchar("page_path", { length: 100 }),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_course_highlights_user_course").on(table.userId, table.courseId),
+	]
+);
+
+// 7天基础自学任务表
+export const onboardingTasks = pgTable("onboarding_tasks", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	dayNumber: integer("day_number").notNull().unique(),
+	title: text("title").notNull(),
+	description: text("description").notNull(),
+	coreTask: text("core_task").notNull(),
+	operationGuide: text("operation_guide").notNull(),
+	acceptanceCriteria: text("acceptance_criteria").notNull(),
+	relatedRoute: text("related_route"),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// 7天学习进度表
+export const onboardingProgress = pgTable("onboarding_progress", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	dayNumber: integer("day_number").notNull(),
+	status: text("status").notNull().default('pending'),
+	completedAt: timestamp("completed_at", { withTimezone: true }),
+	notes: text("notes"),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+},
+(table) => [
+	uniqueIndex("onboarding_progress_user_day_unique").on(table.userId, table.dayNumber),
+]
+);
+
+// 课程进度表
+export const courseProgress = pgTable("course_progress", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	companyId: varchar("company_id", { length: 36 }),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	lessonId: uuid("lesson_id").notNull(),
+	status: text("status").notNull().default('not_started'),
+	startedAt: timestamp("started_at", { withTimezone: true }),
+	completedAt: timestamp("completed_at", { withTimezone: true }),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+},
+(table) => [
+	uniqueIndex("course_progress_user_lesson_unique").on(table.userId, table.lessonId),
+]
+);
+
+// ─── 旗舰版新增表 ───
+
+// 赔付审批流表
+export const approvalFlows = pgTable("approval_flows", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	recordId: varchar("record_id", { length: 36 }),
+	amount: numeric("amount", { precision: 10, scale: 2 }).notNull().default('0'),
+	reason: text("reason"),
+	submittedBy: varchar("submitted_by", { length: 36 }).notNull(),
+	approvedBy: varchar("approved_by", { length: 36 }),
+	status: varchar("status", { length: 20 }).notNull().default('pending'),
+	rejectReason: text("reject_reason"),
+	level: varchar("level", { length: 20 }).notNull().default('manager'),
+	thresholdConfig: jsonb("threshold_config").default(sql`'{}'::jsonb`),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	approvedAt: timestamp("approved_at", { withTimezone: true }),
+},
+(table) => [
+	index("idx_approval_flows_company").on(table.companyId),
+	index("idx_approval_flows_status").on(table.status),
+]
+);
+
+// 审批阈值配置表
+export const approvalThresholds = pgTable("approval_thresholds", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull().unique(),
+	managerLimit: numeric("manager_limit", { precision: 10, scale: 2 }).default('500'),
+	bossLimit: numeric("boss_limit", { precision: 10, scale: 2 }).default('2000'),
+	bossPlusNote: boolean("boss_plus_note").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 资金周报表
+export const weeklyReports = pgTable("weekly_reports", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	weekStart: date("week_start").notNull(),
+	weekEnd: date("week_end").notNull(),
+	totalLoss: numeric("total_loss", { precision: 10, scale: 2 }).default('0'),
+	lossChangePercent: numeric("loss_change_percent", { precision: 5, scale: 2 }),
+	anomalyCount: integer("anomaly_count").default(0),
+	anomalyDetails: jsonb("anomaly_details").default(sql`'[]'::jsonb`),
+	aiSavingMinutes: integer("ai_saving_minutes").default(0),
+	aiUsageCount: integer("ai_usage_count").default(0),
+	suggestions: text("suggestions"),
+	isRead: boolean("is_read").default(false),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_weekly_reports_company").on(table.companyId),
+	index("idx_weekly_reports_week").on(table.weekStart),
+]
+);
+
+// 降本对比基线表
+export const costBaselines = pgTable("cost_baselines", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull().unique(),
+	baselineCompensationRate: numeric("baseline_compensation_rate", { precision: 5, scale: 2 }),
+	baselineRefundRate: numeric("baseline_refund_rate", { precision: 5, scale: 2 }),
+	baselineResponseTime: numeric("baseline_response_time", { precision: 5, scale: 1 }),
+	baselineSatisfaction: numeric("baseline_satisfaction", { precision: 3, scale: 1 }),
+	systemFee: numeric("system_fee", { precision: 10, scale: 2 }).default('299'),
+	recordedAt: timestamp("recorded_at", { withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 正向激励积分规则表
+export const incentiveRules = pgTable("incentive_rules", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	action: varchar("action", { length: 100 }).notNull(),
+	points: integer("points").notNull().default(1),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_incentive_rules_company").on(table.companyId),
+]
+);
+
+// 积分记录表
+export const incentiveRecords = pgTable("incentive_records", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	agentId: varchar("agent_id", { length: 36 }),
+	ruleId: varchar("rule_id", { length: 36 }),
+	action: varchar("action", { length: 100 }).notNull(),
+	points: integer("points").notNull().default(0),
+	note: text("note"),
+	createdBy: varchar("created_by", { length: 36 }),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_incentive_records_company").on(table.companyId),
+	index("idx_incentive_records_user").on(table.userId),
+]
+);
+
+// 积分兑换设置表
+export const incentiveRedemptions = pgTable("incentive_redemptions", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	name: varchar("name", { length: 200 }).notNull(),
+	pointsRequired: integer("points_required").notNull(),
+	description: text("description"),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// 关键词告警配置表
+export const keywordAlertConfigs = pgTable("keyword_alert_configs", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	keyword: varchar("keyword", { length: 100 }).notNull(),
+	category: varchar("category", { length: 50 }).default('敏感词'),
+	alertLevel: varchar("alert_level", { length: 20 }).default('warning'),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_keyword_alert_configs_company").on(table.companyId),
+]
+);
+
+// 关键词告警记录表
+export const keywordAlertRecords = pgTable("keyword_alert_records", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	configId: varchar("config_id", { length: 36 }),
+	keyword: varchar("keyword", { length: 100 }).notNull(),
+	matchedText: text("matched_text"),
+	agentId: varchar("agent_id", { length: 36 }),
+	agentName: varchar("agent_name", { length: 100 }),
+	alertLevel: varchar("alert_level", { length: 20 }).default('warning'),
+	isResolved: boolean("is_resolved").default(false),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_keyword_alert_records_company").on(table.companyId),
+]
+);
+
+// 自检清单表
+export const selfCheckItems = pgTable("self_check_items", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	content: text("content").notNull(),
+	category: varchar("category", { length: 50 }).default('日常检查'),
+	isPreset: boolean("is_preset").default(false),
+	sortOrder: integer("sort_order").default(0),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_self_check_items_company").on(table.companyId),
+]
+);
+
+// 自检记录表
+export const selfCheckRecords = pgTable("self_check_records", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	checkDate: date("check_date").notNull(),
+	results: jsonb("results").default(sql`'[]'::jsonb`),
+	totalItems: integer("total_items").default(0),
+	passedItems: integer("passed_items").default(0),
+	score: numeric("score", { precision: 5, scale: 1 }),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_self_check_records_company").on(table.companyId),
+	index("idx_self_check_records_date").on(table.checkDate),
+]
+);
+
+// 自检提醒配置表
+export const selfCheckReminders = pgTable("self_check_reminders", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull().unique(),
+	frequency: varchar("frequency", { length: 20 }).default('weekly'),
+	reminderDay: integer("reminder_day").default(1),
+	isActive: boolean("is_active").default(true),
+	lastRemindedAt: timestamp("last_reminded_at", { withTimezone: true }),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 知识库更新提醒配置表
+export const knowledgeUpdateReminders = pgTable("knowledge_update_reminders", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull().unique(),
+	frequency: varchar("frequency", { length: 20 }).default('biweekly'),
+	lastCheckAt: timestamp("last_check_at", { withTimezone: true }),
+	nextRemindAt: timestamp("next_remind_at", { withTimezone: true }),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 单品盈利损耗表
+export const productProfitRecords = pgTable("product_profit_records", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	productName: varchar("product_name", { length: 200 }).notNull(),
+	sku: varchar("sku", { length: 100 }),
+	sellPrice: numeric("sell_price", { precision: 10, scale: 2 }).default('0'),
+	costPrice: numeric("cost_price", { precision: 10, scale: 2 }).default('0'),
+	afterSaleLoss: numeric("after_sale_loss", { precision: 10, scale: 2 }).default('0'),
+	netProfit: numeric("net_profit", { precision: 10, scale: 2 }).default('0'),
+	profitLevel: varchar("profit_level", { length: 20 }).default('保本'),
+	refundCount: integer("refund_count").default(0),
+	refundRate: numeric("refund_rate", { precision: 5, scale: 2 }).default('0'),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+},
+(table) => [
+	index("idx_product_profit_records_company").on(table.companyId),
+]
+);
+
+// 我的管理方案（毕业作品）表
+export const managementPlans = pgTable("management_plans", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	scriptsFramework: text("scripts_framework"),
+	scriptsAiOptimized: text("scripts_ai_optimized"),
+	scriptsCompleted: boolean("scripts_completed").default(false),
+	kpiPlan: text("kpi_plan"),
+	kpiAiOptimized: text("kpi_ai_optimized"),
+	kpiCompleted: boolean("kpi_completed").default(false),
+	schedulingRules: text("scheduling_rules"),
+	schedulingAiOptimized: text("scheduling_ai_optimized"),
+	schedulingCompleted: boolean("scheduling_completed").default(false),
+	qualityStandards: text("quality_standards"),
+	qualityAiOptimized: text("quality_ai_optimized"),
+	qualityCompleted: boolean("quality_completed").default(false),
+	sopChecklist: text("sop_checklist"),
+	sopAiOptimized: text("sop_ai_optimized"),
+	sopCompleted: boolean("sop_completed").default(false),
+	progress: integer("progress").default(0),
+	isGraduated: boolean("is_graduated").default(false),
+	graduatedAt: timestamp("graduated_at", { withTimezone: true }),
+	generatedDoc: text("generated_doc"),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_management_plans_user").on(table.userId),
+	index("idx_management_plans_company").on(table.companyId),
+]
+);
+
+// ─── 洞察推送表 ───
+
+export const insights = pgTable("insights", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }),
+	type: varchar("type", { length: 20 }).notNull(),
+	severity: varchar("severity", { length: 10 }).notNull(),
+	title: varchar("title", { length: 200 }).notNull(),
+	content: text("content").notNull(),
+	recommendation: text("recommendation").notNull(),
+	relatedRoute: varchar("related_route", { length: 200 }),
+	relatedCourseId: integer("related_course_id"),
+	isRead: boolean("is_read").default(false),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_insights_company_id").on(table.companyId),
+	index("idx_insights_user_id").on(table.userId),
+	index("idx_insights_type").on(table.type),
+	index("idx_insights_is_read").on(table.isRead),
+	index("idx_insights_created_at").on(table.createdAt),
+]
+);
+
+// ===== src/storage/database/supabase-client.ts =====
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { execSync } from 'child_process';
+import { getReportBuffer, createWrappedFetch } from 'coze-coding-dev-sdk';
+
+let envLoaded = false;
+
+interface SupabaseCredentials {
+  url: string;
+  anonKey: string;
+}
+
+function loadEnv(): void {
+  if (envLoaded || (process.env.COZE_SUPABASE_URL && process.env.COZE_SUPABASE_ANON_KEY)) {
+    return;
+  }
+
+  try {
+    try {
+      require('dotenv').config();
+      if (process.env.COZE_SUPABASE_URL && process.env.COZE_SUPABASE_ANON_KEY) {
+        envLoaded = true;
+        return;
+      }
+    } catch {
+      // dotenv not available
+    }
+
+    const pythonCode = `
+import os
+import sys
+try:
+    from coze_workload_identity import Client
+    client = Client()
+    env_vars = client.get_project_env_vars()
+    client.close()
+    for env_var in env_vars:
+        print(f"{env_var.key}={env_var.value}")
+except Exception as e:
+    print(f"# Error: {e}", file=sys.stderr)
+`;
+
+    const output = execSync(`python3 -c '${pythonCode.replace(/'/g, "'\"'\"'")}'`, {
+      encoding: 'utf-8',
+      timeout: 10000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+
+    const lines = output.trim().split('\n');
+    for (const line of lines) {
+      if (line.startsWith('#')) continue;
+      const eqIndex = line.indexOf('=');
+      if (eqIndex > 0) {
+        const key = line.substring(0, eqIndex);
+        let value = line.substring(eqIndex + 1);
+        if ((value.startsWith("'") && value.endsWith("'")) ||
+            (value.startsWith('"') && value.endsWith('"'))) {
+          value = value.slice(1, -1);
+        }
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
+      }
+    }
+
+    envLoaded = true;
+  } catch {
+    // Silently fail
+  }
+}
+
+/**
+ * Check if we are in a build phase where env vars may not be available.
+ * During `next build`, routes are imported for page data collection,
+ * but Supabase env vars are only injected at runtime.
+ */
+function isBuildPhase(): boolean {
+  // Next.js sets NEXT_PHASE during build
+  if (process.env.NEXT_PHASE === 'phase-production-build') return true;
+  // If COZE_SUPABASE_URL is missing after loadEnv, assume build phase
+  return false;
+}
+
+function getSupabaseCredentials(): SupabaseCredentials | null {
+  const hadNoCreds = !process.env.COZE_SUPABASE_URL;
+  loadEnv();
+
+  // If env vars just became available, invalidate cached placeholder client
+  if (hadNoCreds && process.env.COZE_SUPABASE_URL) {
+    clientCache.delete('no-token');
+  }
+
+  const url = process.env.COZE_SUPABASE_URL;
+  const anonKey = process.env.COZE_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    return null;
+  }
+
+  return { url, anonKey };
+}
+
+function getSupabaseServiceRoleKey(): string | undefined {
+  loadEnv();
+  return process.env.COZE_SUPABASE_SERVICE_ROLE_KEY;
+}
+
+/**
+ * Lazy-initialized Supabase client cache.
+ * Key format: "token:<token>" or "no-token" or "service-role"
+ */
+const clientCache = new Map<string, SupabaseClient>();
+
+function createConfiguredClient(url: string, key: string, globalOptions: Record<string, any>): SupabaseClient {
+  return createClient(url, key, {
+    global: globalOptions,
+    db: {
+      timeout: 60000,
+    },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
+
+function getSupabaseClient(token?: string): SupabaseClient {
+  // Only cache the no-token (service role / anon key) client.
+  // Token-based clients are per-request and should not be cached.
+  if (!token) {
+    const cached = clientCache.get('no-token');
+    if (cached) return cached;
+  }
+
+  const credentials = getSupabaseCredentials();
+
+  // During build phase, env vars may not be available.
+  // Return a placeholder client that defers errors to request time.
+  if (!credentials) {
+    if (isBuildPhase() || !process.env.COZE_SUPABASE_URL) {
+      // Create a placeholder client with dummy values so module imports don't crash during build.
+      // Actual requests will fail with connection errors, which is expected during build.
+      const placeholder = createConfiguredClient('https://placeholder.supabase.co', 'placeholder-key', {});
+      if (!token) clientCache.set('no-token', placeholder);
+      return placeholder;
+    }
+    throw new Error('COZE_SUPABASE_URL is not set');
+  }
+
+  const { url, anonKey } = credentials;
+
+  let key: string;
+  if (token) {
+    key = anonKey;
+  } else {
+    const serviceRoleKey = getSupabaseServiceRoleKey();
+    key = serviceRoleKey ?? anonKey;
+  }
+
+  const globalOptions: Record<string, any> = {};
+  if (token) {
+    globalOptions.headers = { Authorization: `Bearer ${token}` };
+  }
+  try {
+    const buffer = getReportBuffer();
+    if (buffer) {
+      globalOptions.fetch = createWrappedFetch(buffer, 'supabase');
+    }
+  } catch {
+    // Silent — reporting setup failure should not block client creation
+  }
+
+  const client = createConfiguredClient(url, key, globalOptions);
+  if (!token) clientCache.set('no-token', client);
+  return client;
+}
+
+export { loadEnv, getSupabaseCredentials, getSupabaseServiceRoleKey, getSupabaseClient };
+

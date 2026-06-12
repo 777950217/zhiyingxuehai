@@ -1,0 +1,722 @@
+table_name,column_name,data_type,udt_name
+accessory_gallery,id,character varying,varchar
+accessory_gallery,company_id,character varying,varchar
+accessory_gallery,name,text,text
+accessory_gallery,image_url,text,text
+accessory_gallery,is_default,boolean,bool
+accessory_gallery,source,text,text
+accessory_gallery,review_status,text,text
+accessory_gallery,reviewed_at,timestamp with time zone,timestamptz
+accessory_gallery,is_deleted,boolean,bool
+accessory_gallery,created_at,timestamp with time zone,timestamptz
+accessory_gallery,updated_at,timestamp with time zone,timestamptz
+agents,id,character varying,varchar
+agents,company_id,character varying,varchar
+agents,name,text,text
+agents,employee_id,text,text
+agents,hire_date,timestamp with time zone,timestamptz
+agents,position,text,text
+agents,training_stage,text,text
+agents,status,text,text
+agents,created_at,timestamp with time zone,timestamptz
+agents,updated_at,timestamp with time zone,timestamptz
+agents,team_id,character varying,varchar
+agents,role_tag,text,text
+agents,skill_tags,ARRAY,_text
+approval_flows,id,character varying,varchar
+approval_flows,company_id,character varying,varchar
+approval_flows,record_id,character varying,varchar
+approval_flows,amount,numeric,numeric
+approval_flows,reason,text,text
+approval_flows,submitted_by,character varying,varchar
+approval_flows,approved_by,character varying,varchar
+approval_flows,status,character varying,varchar
+approval_flows,reject_reason,text,text
+approval_flows,level,character varying,varchar
+approval_flows,threshold_config,jsonb,jsonb
+approval_flows,created_at,timestamp with time zone,timestamptz
+approval_flows,approved_at,timestamp with time zone,timestamptz
+approval_thresholds,id,character varying,varchar
+approval_thresholds,company_id,character varying,varchar
+approval_thresholds,manager_limit,numeric,numeric
+approval_thresholds,boss_limit,numeric,numeric
+approval_thresholds,boss_plus_note,boolean,bool
+approval_thresholds,created_at,timestamp with time zone,timestamptz
+approval_thresholds,updated_at,timestamp with time zone,timestamptz
+business_records,id,character varying,varchar
+business_records,company_id,character varying,varchar
+business_records,user_id,character varying,varchar
+business_records,year,integer,int4
+business_records,month,integer,int4
+business_records,total_revenue,numeric,numeric
+business_records,purchase_total,numeric,numeric
+business_records,ad_total,numeric,numeric
+business_records,shipping_pack_total,numeric,numeric
+business_records,salary_total,numeric,numeric
+business_records,rent_total,numeric,numeric
+business_records,utilities_total,numeric,numeric
+business_records,after_sales_total,numeric,numeric
+business_records,returns_total,numeric,numeric
+business_records,platform_fee_total,numeric,numeric
+business_records,total_expense,numeric,numeric
+business_records,net_profit,numeric,numeric
+business_records,ad_roi,numeric,numeric
+business_records,fixed_rent,numeric,numeric
+business_records,fixed_salary,numeric,numeric
+business_records,fixed_utilities,numeric,numeric
+business_records,fixed_after_sales,numeric,numeric
+business_records,fixed_returns,numeric,numeric
+business_records,monthly_orders,integer,int4
+business_records,notes,text,text
+business_records,created_at,timestamp with time zone,timestamptz
+business_records,updated_at,timestamp with time zone,timestamptz
+cda_credits,id,character varying,varchar
+cda_credits,user_id,character varying,varchar
+cda_credits,total_credits,integer,int4
+cda_credits,used_credits,integer,int4
+cda_credits,updated_at,timestamp with time zone,timestamptz
+chat_check_results,id,character varying,varchar
+chat_check_results,user_id,character varying,varchar
+chat_check_results,chat_content,text,text
+chat_check_results,response_score,integer,int4
+chat_check_results,script_score,integer,int4
+chat_check_results,attitude_score,integer,int4
+chat_check_results,solution_score,integer,int4
+chat_check_results,total_score,integer,int4
+chat_check_results,issues,text,text
+chat_check_results,suggestions,text,text
+chat_check_results,created_at,timestamp with time zone,timestamptz
+companies,id,character varying,varchar
+companies,name,text,text
+companies,industry,text,text
+companies,team_size,integer,int4
+companies,contact_name,text,text
+companies,contact_phone,text,text
+companies,plan,text,text
+companies,plan_expires_at,timestamp with time zone,timestamptz
+companies,ai_credits_remaining,integer,int4
+companies,service_level,text,text
+companies,status,text,text
+companies,created_at,timestamp with time zone,timestamptz
+companies,updated_at,timestamp with time zone,timestamptz
+companies,plan_start,timestamp with time zone,timestamptz
+companies,plan_end,timestamp with time zone,timestamptz
+companies,plan_period,text,text
+companies,brand_name,text,text
+companies,categories,text,text
+companies,price_range,text,text
+companies,platforms,text,text
+companies,daily_consultations,text,text
+companies,pain_points,text,text
+companies,supply_type,text,text
+companies,install_service,boolean,bool
+companies,return_policy,text,text
+companies,profile_completed,boolean,bool
+companies,seat_limit,integer,int4
+companies,seat_used,integer,int4
+companies,trial_end_at,timestamp with time zone,timestamptz
+cost_baselines,id,character varying,varchar
+cost_baselines,company_id,character varying,varchar
+cost_baselines,baseline_compensation_rate,numeric,numeric
+cost_baselines,baseline_refund_rate,numeric,numeric
+cost_baselines,baseline_response_time,numeric,numeric
+cost_baselines,baseline_satisfaction,numeric,numeric
+cost_baselines,system_fee,numeric,numeric
+cost_baselines,recorded_at,timestamp with time zone,timestamptz
+cost_baselines,updated_at,timestamp with time zone,timestamptz
+cost_records,id,character varying,varchar
+cost_records,company_id,character varying,varchar
+cost_records,record_date,date,date
+cost_records,total_cost,numeric,numeric
+cost_records,work_order_count,integer,int4
+cost_records,refund_count,integer,int4
+cost_records,note,text,text
+cost_records,created_by,character varying,varchar
+cost_records,created_at,timestamp with time zone,timestamptz
+course_highlights,id,uuid,uuid
+course_highlights,user_id,character varying,varchar
+course_highlights,company_id,character varying,varchar
+course_highlights,course_id,character varying,varchar
+course_highlights,highlighted_text,text,text
+course_highlights,page_path,character varying,varchar
+course_highlights,created_at,timestamp with time zone,timestamptz
+course_lessons,id,uuid,uuid
+course_lessons,stage,integer,int4
+course_lessons,lesson_number,character varying,varchar
+course_lessons,title,character varying,varchar
+course_lessons,core_content,text,text
+course_lessons,learning_outcome,text,text
+course_lessons,exercise,text,text
+course_lessons,template,text,text
+course_lessons,duration_minutes,integer,int4
+course_lessons,is_published,boolean,bool
+course_lessons,sort_order,integer,int4
+course_lessons,created_at,timestamp with time zone,timestamptz
+course_lessons,video_url,character varying,varchar
+course_lessons,video_duration,character varying,varchar
+courses,id,character varying,varchar
+courses,company_id,character varying,varchar
+courses,title,text,text
+courses,category,character varying,varchar
+courses,description,text,text
+courses,content,text,text
+courses,is_preset,boolean,bool
+courses,sort_order,integer,int4
+courses,created_at,timestamp with time zone,timestamptz
+courses,updated_at,timestamp with time zone,timestamptz
+courses,feishu_doc_url,text,text
+custom_knowledge,id,character varying,varchar
+custom_knowledge,company_id,character varying,varchar
+custom_knowledge,title,character varying,varchar
+custom_knowledge,content,text,text
+custom_knowledge,category,character varying,varchar
+custom_knowledge,is_active,boolean,bool
+custom_knowledge,created_by,character varying,varchar
+custom_knowledge,created_at,timestamp with time zone,timestamptz
+custom_knowledge,updated_at,timestamp with time zone,timestamptz
+customer_records,id,character varying,varchar
+customer_records,company_id,character varying,varchar
+customer_records,user_id,character varying,varchar
+customer_records,customer_name,character varying,varchar
+customer_records,customer_phone,character varying,varchar
+customer_records,customer_type,character varying,varchar
+customer_records,source,character varying,varchar
+customer_records,status,character varying,varchar
+customer_records,notes,text,text
+customer_records,last_query,text,text
+customer_records,last_query_at,timestamp without time zone,timestamp
+customer_records,service_count,integer,int4
+customer_records,created_at,timestamp without time zone,timestamp
+customer_records,updated_at,timestamp without time zone,timestamp
+customer_records,source_platform,character varying,varchar
+customer_records,risk_tags,jsonb,jsonb
+customer_records,product_model,character varying,varchar
+customer_records,water_pressure,character varying,varchar
+customer_records,platform_id,character varying,varchar
+customer_records,pit_distance,character varying,varchar
+customer_records,related_order_id,character varying,varchar
+customer_records,follow_up_summary,text,text
+daily_practice,id,uuid,uuid
+daily_practice,user_id,character varying,varchar
+daily_practice,company_id,character varying,varchar
+daily_practice,lesson_number,character varying,varchar
+daily_practice,question_type,character varying,varchar
+daily_practice,question,text,text
+daily_practice,options,jsonb,jsonb
+daily_practice,user_answer,text,text
+daily_practice,ai_evaluation,text,text
+daily_practice,is_wrong,boolean,bool
+daily_practice,is_collected,boolean,bool
+daily_practice,created_at,timestamp with time zone,timestamptz
+daily_reports,id,character varying,varchar
+daily_reports,report_date,date,date
+daily_reports,type,character varying,varchar
+daily_reports,title,text,text
+daily_reports,summary,text,text
+daily_reports,action_individual,text,text
+daily_reports,action_staff,text,text
+daily_reports,action_admin,text,text
+daily_reports,created_at,timestamp with time zone,timestamptz
+exam_records,id,character varying,varchar
+exam_records,user_id,character varying,varchar
+exam_records,score,integer,int4
+exam_records,answers,text,text
+exam_records,passed,boolean,bool
+exam_records,created_at,timestamp with time zone,timestamptz
+health_check,id,integer,int4
+health_check,updated_at,timestamp with time zone,timestamptz
+incentive_records,id,character varying,varchar
+incentive_records,company_id,character varying,varchar
+incentive_records,user_id,character varying,varchar
+incentive_records,agent_id,character varying,varchar
+incentive_records,rule_id,character varying,varchar
+incentive_records,action,character varying,varchar
+incentive_records,points,integer,int4
+incentive_records,note,text,text
+incentive_records,created_by,character varying,varchar
+incentive_records,created_at,timestamp with time zone,timestamptz
+incentive_redemptions,id,character varying,varchar
+incentive_redemptions,company_id,character varying,varchar
+incentive_redemptions,name,character varying,varchar
+incentive_redemptions,points_required,integer,int4
+incentive_redemptions,description,text,text
+incentive_redemptions,is_active,boolean,bool
+incentive_redemptions,created_at,timestamp with time zone,timestamptz
+incentive_rules,id,character varying,varchar
+incentive_rules,company_id,character varying,varchar
+incentive_rules,action,character varying,varchar
+incentive_rules,points,integer,int4
+incentive_rules,is_active,boolean,bool
+incentive_rules,created_at,timestamp with time zone,timestamptz
+industry_trends,id,character varying,varchar
+industry_trends,company_id,character varying,varchar
+industry_trends,category,character varying,varchar
+industry_trends,trend,character varying,varchar
+industry_trends,title,character varying,varchar
+industry_trends,key_data,text,text
+industry_trends,advice,character varying,varchar
+industry_trends,advice_detail,text,text
+industry_trends,data_source,character varying,varchar
+industry_trends,is_active,boolean,bool
+industry_trends,created_at,timestamp with time zone,timestamptz
+industry_trends,updated_at,timestamp with time zone,timestamptz
+invitations,id,character varying,varchar
+invitations,company_id,character varying,varchar
+invitations,inviter_id,character varying,varchar
+invitations,phone,character varying,varchar
+invitations,email,character varying,varchar
+invitations,token,character varying,varchar
+invitations,role,character varying,varchar
+invitations,status,character varying,varchar
+invitations,used_by,character varying,varchar
+invitations,used_at,timestamp with time zone,timestamptz
+invitations,expires_at,timestamp with time zone,timestamptz
+invitations,created_at,timestamp with time zone,timestamptz
+item_enhancements,id,character varying,varchar
+item_enhancements,company_id,character varying,varchar
+item_enhancements,module_key,text,text
+item_enhancements,section_index,integer,int4
+item_enhancements,item_index,integer,int4
+item_enhancements,quick_phrase,text,text
+item_enhancements,images,jsonb,jsonb
+item_enhancements,source,text,text
+item_enhancements,review_status,text,text
+item_enhancements,reviewed_at,timestamp with time zone,timestamptz
+item_enhancements,is_deleted,boolean,bool
+item_enhancements,created_at,timestamp with time zone,timestamptz
+item_enhancements,updated_at,timestamp with time zone,timestamptz
+item_enhancements,custom_meaning,text,text
+item_enhancements,custom_title,text,text
+item_enhancements,is_hidden,boolean,bool
+keyword_alert_configs,id,character varying,varchar
+keyword_alert_configs,company_id,character varying,varchar
+keyword_alert_configs,keyword,character varying,varchar
+keyword_alert_configs,category,character varying,varchar
+keyword_alert_configs,alert_level,character varying,varchar
+keyword_alert_configs,is_active,boolean,bool
+keyword_alert_configs,created_at,timestamp with time zone,timestamptz
+keyword_alert_records,id,character varying,varchar
+keyword_alert_records,company_id,character varying,varchar
+keyword_alert_records,config_id,character varying,varchar
+keyword_alert_records,keyword,character varying,varchar
+keyword_alert_records,matched_text,text,text
+keyword_alert_records,agent_id,character varying,varchar
+keyword_alert_records,agent_name,character varying,varchar
+keyword_alert_records,alert_level,character varying,varchar
+keyword_alert_records,is_resolved,boolean,bool
+keyword_alert_records,created_at,timestamp with time zone,timestamptz
+knowledge_update_reminders,id,character varying,varchar
+knowledge_update_reminders,company_id,character varying,varchar
+knowledge_update_reminders,frequency,character varying,varchar
+knowledge_update_reminders,last_check_at,timestamp with time zone,timestamptz
+knowledge_update_reminders,next_remind_at,timestamp with time zone,timestamptz
+knowledge_update_reminders,is_active,boolean,bool
+knowledge_update_reminders,created_at,timestamp with time zone,timestamptz
+knowledge_update_reminders,updated_at,timestamp with time zone,timestamptz
+kpi_plans,id,character varying,varchar
+kpi_plans,company_id,character varying,varchar
+kpi_plans,name,character varying,varchar
+kpi_plans,team_size,integer,int4
+kpi_plans,presale_ratio,integer,int4
+kpi_plans,aftersale_ratio,integer,int4
+kpi_plans,daily_orders,integer,int4
+kpi_plans,team_stage,character varying,varchar
+kpi_plans,focus,text,text
+kpi_plans,metrics,text,text
+kpi_plans,created_by,character varying,varchar
+kpi_plans,created_at,timestamp with time zone,timestamptz
+kpi_plans,updated_at,timestamp with time zone,timestamptz
+kpi_plans,is_active,boolean,bool
+kpi_records,id,character varying,varchar
+kpi_records,company_id,character varying,varchar
+kpi_records,agent_id,character varying,varchar
+kpi_records,metric_name,character varying,varchar
+kpi_records,score,integer,int4
+kpi_records,max_score,integer,int4
+kpi_records,period,character varying,varchar
+kpi_records,recorded_by,character varying,varchar
+kpi_records,created_at,timestamp with time zone,timestamptz
+kpi_records,metrics_data,jsonb,jsonb
+kpi_records,record_date,date,date
+learning_records,id,character varying,varchar
+learning_records,user_id,character varying,varchar
+learning_records,course_id,character varying,varchar
+learning_records,progress,integer,int4
+learning_records,completed,boolean,bool
+learning_records,completed_at,timestamp with time zone,timestamptz
+learning_records,created_at,timestamp with time zone,timestamptz
+learning_records,updated_at,timestamp with time zone,timestamptz
+management_plans,id,character varying,varchar
+management_plans,company_id,character varying,varchar
+management_plans,user_id,character varying,varchar
+management_plans,scripts_framework,text,text
+management_plans,scripts_ai_optimized,text,text
+management_plans,scripts_completed,boolean,bool
+management_plans,kpi_plan,text,text
+management_plans,kpi_ai_optimized,text,text
+management_plans,kpi_completed,boolean,bool
+management_plans,scheduling_rules,text,text
+management_plans,scheduling_ai_optimized,text,text
+management_plans,scheduling_completed,boolean,bool
+management_plans,quality_standards,text,text
+management_plans,quality_ai_optimized,text,text
+management_plans,quality_completed,boolean,bool
+management_plans,sop_checklist,text,text
+management_plans,sop_ai_optimized,text,text
+management_plans,sop_checklist_completed,boolean,bool
+management_plans,progress,integer,int4
+management_plans,is_graduated,boolean,bool
+management_plans,graduated_at,timestamp with time zone,timestamptz
+management_plans,generated_doc,text,text
+management_plans,created_at,timestamp with time zone,timestamptz
+management_plans,updated_at,timestamp with time zone,timestamptz
+newbie_training_progress,id,character varying,varchar
+newbie_training_progress,company_id,character varying,varchar
+newbie_training_progress,user_id,character varying,varchar
+newbie_training_progress,module_id,character varying,varchar
+newbie_training_progress,status,character varying,varchar
+newbie_training_progress,started_at,timestamp with time zone,timestamptz
+newbie_training_progress,completed_at,timestamp with time zone,timestamptz
+newbie_training_progress,updated_at,timestamp with time zone,timestamptz
+notifications,id,character varying,varchar
+notifications,company_id,character varying,varchar
+notifications,user_id,character varying,varchar
+notifications,type,character varying,varchar
+notifications,title,text,text
+notifications,content,text,text
+notifications,is_read,boolean,bool
+notifications,created_at,timestamp with time zone,timestamptz
+notifications,platform,text,text
+notifications,summary,text,text
+onboarding_records,id,character varying,varchar
+onboarding_records,company_id,character varying,varchar
+onboarding_records,user_id,character varying,varchar
+onboarding_records,agent_id,character varying,varchar
+onboarding_records,step1_status,character varying,varchar
+onboarding_records,step2_status,character varying,varchar
+onboarding_records,step3_status,character varying,varchar
+onboarding_records,step4_status,character varying,varchar
+onboarding_records,created_at,timestamp with time zone,timestamptz
+onboarding_records,updated_at,timestamp with time zone,timestamptz
+onboarding_tasks,id,uuid,uuid
+onboarding_tasks,day_number,integer,int4
+onboarding_tasks,title,text,text
+onboarding_tasks,description,text,text
+onboarding_tasks,core_task,text,text
+onboarding_tasks,operation_guide,text,text
+onboarding_tasks,acceptance_criteria,text,text
+onboarding_tasks,related_route,text,text
+onboarding_tasks,created_at,timestamp with time zone,timestamptz
+orders,id,character varying,varchar
+orders,company_id,character varying,varchar
+orders,user_id,character varying,varchar
+orders,plan,character varying,varchar
+orders,period,character varying,varchar
+orders,amount,numeric,numeric
+orders,credits,integer,int4
+orders,status,character varying,varchar
+orders,payment_method,character varying,varchar
+orders,remark,text,text
+orders,created_at,timestamp with time zone,timestamptz
+orders,updated_at,timestamp with time zone,timestamptz
+payment_orders,id,character varying,varchar
+payment_orders,company_id,character varying,varchar
+payment_orders,user_id,character varying,varchar
+payment_orders,order_no,character varying,varchar
+payment_orders,plan,character varying,varchar
+payment_orders,amount,numeric,numeric
+payment_orders,period,character varying,varchar
+payment_orders,payment_method,character varying,varchar
+payment_orders,screenshot_url,text,text
+payment_orders,status,character varying,varchar
+payment_orders,remark,text,text
+payment_orders,confirmed_by,character varying,varchar
+payment_orders,confirmed_at,timestamp with time zone,timestamptz
+payment_orders,created_at,timestamp with time zone,timestamptz
+personal_data_records,id,character varying,varchar
+personal_data_records,user_id,character varying,varchar
+personal_data_records,record_date,date,date
+personal_data_records,visits,integer,int4
+personal_data_records,avg_response_time,double precision,float8
+personal_data_records,consultations,integer,int4
+personal_data_records,orders,integer,int4
+personal_data_records,complaints,integer,int4
+personal_data_records,conversion_rate,double precision,float8
+personal_data_records,complaint_rate,double precision,float8
+personal_data_records,mom_change,double precision,float8
+personal_data_records,notes,text,text
+personal_data_records,created_at,timestamp with time zone,timestamptz
+personal_data_records,target_visits,integer,int4
+personal_data_records,target_response_time,double precision,float8
+personal_data_records,target_consultations,integer,int4
+personal_data_records,target_orders,integer,int4
+personal_data_records,target_complaints,integer,int4
+personal_data_records,target_conversion_rate,double precision,float8
+personal_feature_trials,id,character varying,varchar
+personal_feature_trials,user_id,character varying,varchar
+personal_feature_trials,feature,character varying,varchar
+personal_feature_trials,used_count,integer,int4
+personal_feature_trials,created_at,timestamp with time zone,timestamptz
+personal_learning_progress,id,uuid,uuid
+personal_learning_progress,user_id,uuid,uuid
+personal_learning_progress,lesson_id,character varying,varchar
+personal_learning_progress,learned,boolean,bool
+personal_learning_progress,learned_at,timestamp with time zone,timestamptz
+personal_reports,id,character varying,varchar
+personal_reports,user_id,character varying,varchar
+personal_reports,report_type,character varying,varchar
+personal_reports,period,character varying,varchar
+personal_reports,title,character varying,varchar
+personal_reports,content,text,text
+personal_reports,has_cda,boolean,bool
+personal_reports,created_at,timestamp with time zone,timestamptz
+phrase_library,id,character varying,varchar
+phrase_library,company_id,character varying,varchar
+phrase_library,category,character varying,varchar
+phrase_library,content,text,text
+phrase_library,is_preset,boolean,bool
+phrase_library,use_count,integer,int4
+phrase_library,created_by,character varying,varchar
+phrase_library,created_at,timestamp with time zone,timestamptz
+phrase_library,updated_at,timestamp with time zone,timestamptz
+phrase_library,is_case,boolean,bool
+phrase_library,source_id,character varying,varchar
+phrase_library,scene,text,text
+phrase_library,question,text,text
+phrase_library,answer,text,text
+phrase_library,tags,text,text
+practical_tasks,id,uuid,uuid
+practical_tasks,user_id,character varying,varchar
+practical_tasks,company_id,character varying,varchar
+practical_tasks,lesson_number,character varying,varchar
+practical_tasks,task_type,character varying,varchar
+practical_tasks,task_content,text,text
+practical_tasks,user_submission,text,text
+practical_tasks,ai_score,integer,int4
+practical_tasks,ai_feedback,text,text
+practical_tasks,submitted_at,timestamp with time zone,timestamptz
+problem_solutions,id,character varying,varchar
+problem_solutions,company_id,character varying,varchar
+problem_solutions,user_id,character varying,varchar
+problem_solutions,query,text,text
+problem_solutions,category,character varying,varchar
+problem_solutions,judgment,text,text
+problem_solutions,steps,text,text
+problem_solutions,script,text,text
+problem_solutions,solution_used,boolean,bool
+problem_solutions,created_at,timestamp with time zone,timestamptz
+problem_solutions,diagnosis_type,text,text
+problem_solutions,ai_solution,text,text
+problem_solutions,is_helpful,boolean,bool
+problem_solutions,problem_desc,text,text
+problem_solutions,is_marked_as_case,boolean,bool
+problem_solutions,is_visible,boolean,bool
+problem_solutions,marked_at,timestamp with time zone,timestamptz
+problem_solutions,case_tags,text,text
+problem_solutions,customer_feedback,text,text
+problem_solutions,script_id,character varying,varchar
+product_profit_records,id,character varying,varchar
+product_profit_records,company_id,character varying,varchar
+product_profit_records,product_name,character varying,varchar
+product_profit_records,sku,character varying,varchar
+product_profit_records,sell_price,numeric,numeric
+product_profit_records,cost_price,numeric,numeric
+product_profit_records,after_sale_loss,numeric,numeric
+product_profit_records,net_profit,numeric,numeric
+product_profit_records,profit_level,character varying,varchar
+product_profit_records,refund_count,integer,int4
+product_profit_records,refund_rate,numeric,numeric
+product_profit_records,created_at,timestamp with time zone,timestamptz
+product_profit_records,updated_at,timestamp with time zone,timestamptz
+quality_inspections,id,character varying,varchar
+quality_inspections,company_id,character varying,varchar
+quality_inspections,inspector_id,uuid,uuid
+quality_inspections,staff_id,uuid,uuid
+quality_inspections,problem_solution_id,uuid,uuid
+quality_inspections,response_score,integer,int4
+quality_inspections,script_score,integer,int4
+quality_inspections,attitude_score,integer,int4
+quality_inspections,process_score,integer,int4
+quality_inspections,resolution_score,integer,int4
+quality_inspections,total_score,integer,int4
+quality_inspections,comment,text,text
+quality_inspections,created_at,timestamp without time zone,timestamp
+recharge_logs,id,character varying,varchar
+recharge_logs,company_id,character varying,varchar
+recharge_logs,user_id,character varying,varchar
+recharge_logs,user_name,character varying,varchar
+recharge_logs,plan,character varying,varchar
+recharge_logs,period,character varying,varchar
+recharge_logs,amount,numeric,numeric
+recharge_logs,operator_id,character varying,varchar
+recharge_logs,operator_name,character varying,varchar
+recharge_logs,remark,text,text
+recharge_logs,created_at,timestamp with time zone,timestamptz
+report_views,id,character varying,varchar
+report_views,user_id,character varying,varchar
+report_views,report_id,character varying,varchar
+report_views,viewed_at,timestamp with time zone,timestamptz
+reports,id,character varying,varchar
+reports,company_id,character varying,varchar
+reports,type,character varying,varchar
+reports,title,character varying,varchar
+reports,period_start,date,date
+reports,period_end,date,date
+reports,summary,text,text
+reports,data,jsonb,jsonb
+reports,insights,jsonb,jsonb
+reports,created_at,timestamp with time zone,timestamptz
+rule_updates,id,character varying,varchar
+rule_updates,company_id,character varying,varchar
+rule_updates,platform,character varying,varchar
+rule_updates,title,character varying,varchar
+rule_updates,summary,text,text
+rule_updates,action_advice,text,text
+rule_updates,effective_date,date,date
+rule_updates,source_url,text,text
+rule_updates,is_active,boolean,bool
+rule_updates,created_at,timestamp with time zone,timestamptz
+rule_updates,updated_at,timestamp with time zone,timestamptz
+scripts,id,character varying,varchar
+scripts,category,text,text
+scripts,phenomenon,text,text
+scripts,diagnosis,text,text
+scripts,solution,text,text
+scripts,detail,text,text
+scripts,sort_order,integer,int4
+scripts,created_at,timestamp with time zone,timestamptz
+scripts,updated_at,timestamp with time zone,timestamptz
+self_check_items,id,character varying,varchar
+self_check_items,company_id,character varying,varchar
+self_check_items,content,text,text
+self_check_items,category,character varying,varchar
+self_check_items,is_preset,boolean,bool
+self_check_items,sort_order,integer,int4
+self_check_items,is_active,boolean,bool
+self_check_items,created_at,timestamp with time zone,timestamptz
+self_check_records,id,character varying,varchar
+self_check_records,company_id,character varying,varchar
+self_check_records,user_id,character varying,varchar
+self_check_records,check_date,date,date
+self_check_records,results,jsonb,jsonb
+self_check_records,total_items,integer,int4
+self_check_records,passed_items,integer,int4
+self_check_records,score,numeric,numeric
+self_check_records,created_at,timestamp with time zone,timestamptz
+self_check_reminders,id,character varying,varchar
+self_check_reminders,company_id,character varying,varchar
+self_check_reminders,frequency,character varying,varchar
+self_check_reminders,reminder_day,integer,int4
+self_check_reminders,is_active,boolean,bool
+self_check_reminders,last_reminded_at,timestamp with time zone,timestamptz
+self_check_reminders,created_at,timestamp with time zone,timestamptz
+self_check_reminders,updated_at,timestamp with time zone,timestamptz
+sop_templates,id,character varying,varchar
+sop_templates,company_id,character varying,varchar
+sop_templates,category,text,text
+sop_templates,name,text,text
+sop_templates,scenario,text,text
+sop_templates,steps_json,text,text
+sop_templates,role,text,text
+sop_templates,is_preset,boolean,bool
+sop_templates,needs_update,boolean,bool
+sop_templates,version,integer,int4
+sop_templates,updated_by,text,text
+sop_templates,created_at,timestamp with time zone,timestamptz
+sop_templates,updated_at,timestamp with time zone,timestamptz
+subscriptions,id,character varying,varchar
+subscriptions,company_id,character varying,varchar
+subscriptions,plan,character varying,varchar
+subscriptions,plan_period,character varying,varchar
+subscriptions,plan_start,date,date
+subscriptions,plan_end,date,date
+subscriptions,status,character varying,varchar
+subscriptions,created_at,timestamp with time zone,timestamptz
+subscriptions,updated_at,timestamp with time zone,timestamptz
+teams,id,character varying,varchar
+teams,company_id,character varying,varchar
+teams,name,character varying,varchar
+teams,type,character varying,varchar
+teams,leader_id,character varying,varchar
+teams,member_count,integer,int4
+teams,status,character varying,varchar
+teams,created_at,timestamp with time zone,timestamptz
+teams,updated_at,timestamp with time zone,timestamptz
+template_usage,id,uuid,uuid
+template_usage,template_id,text,text
+template_usage,company_id,uuid,uuid
+template_usage,user_id,uuid,uuid
+template_usage,action,text,text
+template_usage,created_at,timestamp with time zone,timestamptz
+training_progress,id,character varying,varchar
+training_progress,user_id,character varying,varchar
+training_progress,module_id,character varying,varchar
+training_progress,current_step,integer,int4
+training_progress,completed,boolean,bool
+training_progress,completed_at,timestamp with time zone,timestamptz
+training_progress,created_at,timestamp with time zone,timestamptz
+training_progress,updated_at,timestamp with time zone,timestamptz
+user_read_log,id,character varying,varchar
+user_read_log,user_id,character varying,varchar
+user_read_log,item_type,character varying,varchar
+user_read_log,item_id,character varying,varchar
+user_read_log,read_at,timestamp with time zone,timestamptz
+users,id,character varying,varchar
+users,company_id,character varying,varchar
+users,email,text,text
+users,password_hash,text,text
+users,display_name,text,text
+users,role,text,text
+users,user_type,text,text
+users,ai_credits_remaining,integer,int4
+users,status,text,text
+users,last_login_at,timestamp with time zone,timestamptz
+users,created_at,timestamp with time zone,timestamptz
+users,updated_at,timestamp with time zone,timestamptz
+users,remaining_credits,integer,int4
+users,industry,character varying,varchar
+users,team_size,character varying,varchar
+users,gender,character varying,varchar
+users,bio,text,text
+weekly_reports,id,character varying,varchar
+weekly_reports,company_id,character varying,varchar
+weekly_reports,week_start,date,date
+weekly_reports,week_end,date,date
+weekly_reports,total_loss,numeric,numeric
+weekly_reports,loss_change_percent,numeric,numeric
+weekly_reports,anomaly_count,integer,int4
+weekly_reports,anomaly_details,jsonb,jsonb
+weekly_reports,ai_saving_minutes,integer,int4
+weekly_reports,ai_usage_count,integer,int4
+weekly_reports,suggestions,text,text
+weekly_reports,is_read,boolean,bool
+weekly_reports,created_at,timestamp with time zone,timestamptz
+work_orders,id,character varying,varchar
+work_orders,company_id,character varying,varchar
+work_orders,user_id,character varying,varchar
+work_orders,customer_name,character varying,varchar
+work_orders,customer_phone,character varying,varchar
+work_orders,query,text,text
+work_orders,category,character varying,varchar
+work_orders,ai_judgment,text,text
+work_orders,ai_script,text,text
+work_orders,priority,character varying,varchar
+work_orders,status,character varying,varchar
+work_orders,result,text,text
+work_orders,source_type,character varying,varchar
+work_orders,problem_solution_id,uuid,uuid
+work_orders,created_at,timestamp without time zone,timestamp
+work_orders,completed_at,timestamp without time zone,timestamp
+work_orders,updated_at,timestamp without time zone,timestamp
+work_orders,order_no,character varying,varchar
+wrong_questions,id,uuid,uuid
+wrong_questions,user_id,character varying,varchar
+wrong_questions,lesson_number,character varying,varchar
+wrong_questions,question,text,text
+wrong_questions,question_type,character varying,varchar
+wrong_questions,options,text,text
+wrong_questions,user_answer,text,text
+wrong_questions,correct_answer,text,text
+wrong_questions,ai_analysis,text,text
+wrong_questions,reviewed,boolean,bool
+wrong_questions,created_at,timestamp with time zone,timestamptz

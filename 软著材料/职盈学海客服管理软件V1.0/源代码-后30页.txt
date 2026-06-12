@@ -1,0 +1,1500 @@
+  for (const [key, entry] of userStore) {
+    if (now > entry.resetAt) userStore.delete(key);
+  }
+}, 5 * 60 * 1000);
+
+// ─── Rate limit configs ───
+interface RateLimitRule {
+  windowMs: number;   // time window in milliseconds
+  maxRequests: number; // max requests per window
+}
+
+const AUTH_LIMIT: RateLimitRule = { windowMs: 5 * 60 * 1000, maxRequests: 10 };       // /api/auth/* 5min/10次
+const REGISTER_LIMIT: RateLimitRule = { windowMs: 5 * 60 * 1000, maxRequests: 5 };    // /api/auth/register 5min/5次
+const AI_CHECKUP_LIMIT: RateLimitRule = { windowMs: 24 * 60 * 60 * 1000, maxRequests: 20 }; // /api/ai-checkup/* daily/20次
+
+function getClientIP(request: NextRequest): string {
+  // Try common proxy headers first
+  const xff = request.headers.get('x-forwarded-for');
+  if (xff) return xff.split(',')[0].trim();
+  const realIp = request.headers.get('x-real-ip');
+  if (realIp) return realIp.trim();
+  return 'unknown';
+}
+
+function checkRateLimit(
+  store: Map<string, RateLimitEntry>,
+  key: string,
+  windowMs: number,
+  maxRequests: number,
+): { allowed: boolean; remaining: number; resetAt: number } {
+  const now = Date.now();
+  const entry = store.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    // New window
+    const newEntry: RateLimitEntry = { count: 1, resetAt: now + windowMs };
+    store.set(key, newEntry);
+    return { allowed: true, remaining: maxRequests - 1, resetAt: newEntry.resetAt };
+  }
+
+  if (entry.count >= maxRequests) {
+    return { allowed: false, remaining: 0, resetAt: entry.resetAt };
+  }
+
+  entry.count += 1;
+  return { allowed: true, remaining: maxRequests - entry.count, resetAt: entry.resetAt };
+}
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // ─── Rate limiting for /api/auth/register (stricter) ───
+  if (pathname === '/api/auth/register') {
+    const ip = getClientIP(request);
+    const result = checkRateLimit(ipStore, `register:${ip}`, REGISTER_LIMIT.windowMs, REGISTER_LIMIT.maxRequests);
+    if (!result.allowed) {
+      return NextResponse.json(
+        { error: '注册请求过于频繁，请5分钟后再试' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((result.resetAt - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+          },
+        },
+      );
+    }
+  }
+
+  // ─── Rate limiting for /api/auth/* (except register which has its own limit) ───
+  if (pathname.startsWith('/api/auth/') && pathname !== '/api/auth/register') {
+    const ip = getClientIP(request);
+    const result = checkRateLimit(ipStore, `auth:${ip}`, AUTH_LIMIT.windowMs, AUTH_LIMIT.maxRequests);
+    if (!result.allowed) {
+      return NextResponse.json(
+        { error: '登录请求过于频繁，请5分钟后再试' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((result.resetAt - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+          },
+        },
+      );
+    }
+  }
+
+  // ─── Rate limiting for /api/ai-checkup/* (per user, daily) ───
+  if (pathname.startsWith('/api/ai-checkup/')) {
+    // User ID from header (set by client after auth), fallback to IP
+    const userId = request.headers.get('x-user-id') || getClientIP(request);
+    const result = checkRateLimit(userStore, `ai:${userId}`, AI_CHECKUP_LIMIT.windowMs, AI_CHECKUP_LIMIT.maxRequests);
+    if (!result.allowed) {
+      return NextResponse.json(
+        { error: '今日AI体检次数已用完，明天再来吧' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((result.resetAt - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Limit': String(AI_CHECKUP_LIMIT.maxRequests),
+          },
+        },
+      );
+    }
+    // Add rate limit headers to successful responses
+    const response = NextResponse.next();
+    response.headers.set('X-RateLimit-Remaining', String(result.remaining));
+    response.headers.set('X-RateLimit-Limit', String(AI_CHECKUP_LIMIT.maxRequests));
+    return response;
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/api/auth/:path*', '/api/ai-checkup/:path*'],
+};
+
+// ===== src/server.ts =====
+import { createServer } from 'http';
+import { parse } from 'url';
+import next from 'next';
+
+const dev = process.env.COZE_PROJECT_ENV !== 'PROD';
+const hostname = process.env.HOSTNAME || 'localhost';
+const port = parseInt(process.env.PORT || '5000', 10);
+
+// Security headers applied to all responses
+const SECURITY_HEADERS: Record<string, string> = {
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+};
+
+function getSupabaseHost(): string {
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    return new URL(url).hostname;
+  } catch {
+    return '*.supabase.co';
+  }
+}
+
+function getCspHeader(): string {
+  const supabaseHost = getSupabaseHost();
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.cn",
+    "font-src 'self' https://fonts.gstatic.cn",
+    "img-src 'self' data: blob: https:",
+    `connect-src 'self' https://${supabaseHost} wss://${supabaseHost}`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ');
+}
+
+// Create Next.js app
+const app = next({ dev, hostname, port });
+const handle = app.getRequestHandler();
+
+app.prepare().then(() => {
+  const server = createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url!, true);
+      // Inject security headers before handling request
+      const originalSetHeader = res.setHeader.bind(res);
+      let headersInjected = false;
+      const injectSecurityHeaders = () => {
+        if (headersInjected) return;
+        headersInjected = true;
+        for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+          try { originalSetHeader(key, value); } catch { /* already sent */ }
+        }
+        try { originalSetHeader('Content-Security-Policy', getCspHeader()); } catch { /* already sent */ }
+      };
+
+      // Override writeHead to inject headers before first write
+      const originalWriteHead = res.writeHead.bind(res);
+      res.writeHead = (...args: unknown[]) => {
+        injectSecurityHeaders();
+        return originalWriteHead(...args as Parameters<typeof originalWriteHead>);
+      };
+
+      // Also hook into setHeader to detect when headers are about to be sent
+      res.setHeader = (name: string, value: string | string | number) => {
+        return originalSetHeader(name, value);
+      };
+
+      await handle(req, res, parsedUrl);
+      // Ensure headers are injected even if writeHead wasn't called explicitly
+      injectSecurityHeaders();
+    } catch (err) {
+      console.error('Error occurred handling', req.url, err);
+      res.statusCode = 500;
+      res.end('Internal server error');
+    }
+  });
+  server.once('error', err => {
+    console.error(err);
+    process.exit(1);
+  });
+  server.listen(port, () => {
+    console.log(
+      `> Server listening at http://${hostname}:${port} as ${
+        dev ? 'development' : process.env.COZE_PROJECT_ENV
+      }`,
+    );
+  });
+});
+
+// ===== src/storage/database/shared/relations.ts =====
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { relations } from "drizzle-orm/relations";
+import {  } from "./schema";
+
+
+// ===== src/storage/database/shared/schema.ts =====
+import { pgTable, serial, varchar, text, integer, boolean, timestamp, numeric, date, jsonb, index, uniqueIndex, uuid } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
+
+export const healthCheck = pgTable("health_check", {
+	id: serial().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+});
+
+// 5. SOP流程模板表
+export const sopTemplates = pgTable(
+	"sop_templates",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		category: text("category").notNull(),
+		name: text("name").notNull(),
+		scenario: text("scenario"),
+		steps_json: text("steps_json").default('[]'),
+		role: text("role").default('售中客服'),
+		is_preset: boolean("is_preset").default(false),
+		needs_update: boolean("needs_update").default(false),
+		version: integer("version").default(1),
+		updated_by: text("updated_by"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+			industry: text("industry"),
+			team_size: text("team_size"),
+			gender: text("gender").default('保密'),
+			bio: text("bio").default(''),
+	},
+	(table) => [
+		index("idx_sop_templates_company_id").on(table.company_id),
+		index("idx_sop_templates_category").on(table.category),
+	]
+);
+
+export const ruleUpdates = pgTable(
+	"rule_updates",
+	{
+		id: varchar("id", { length: 36 }).primaryKey(),
+		companyId: varchar("company_id", { length: 36 }),
+		platform: varchar("platform", { length: 20 }).notNull(),
+		title: varchar("title", { length: 300 }).notNull(),
+		summary: text("summary"),
+		actionAdvice: text("action_advice"),
+		effectiveDate: date("effective_date"),
+		sourceUrl: text("source_url"),
+		isActive: boolean("is_active").default(true).notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_rule_updates_platform").on(table.platform),
+		index("idx_rule_updates_company").on(table.companyId),
+	]
+);
+
+export const industryTrends = pgTable(
+	"industry_trends",
+	{
+		id: varchar("id", { length: 36 }).primaryKey(),
+		companyId: varchar("company_id", { length: 36 }),
+		category: varchar("category", { length: 20 }).notNull(),
+		trend: varchar("trend", { length: 10 }).notNull(),
+		title: varchar("title", { length: 300 }).notNull(),
+		keyData: text("key_data"),
+		advice: varchar("advice", { length: 20 }),
+		adviceDetail: text("advice_detail"),
+		dataSource: varchar("data_source", { length: 100 }),
+		isActive: boolean("is_active").default(true).notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_industry_trends_category").on(table.category),
+		index("idx_industry_trends_company").on(table.companyId),
+	]
+);
+
+export const userReadLog = pgTable(
+	"user_read_log",
+	{
+		id: varchar("id", { length: 36 }).primaryKey(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		itemType: varchar("item_type", { length: 30 }).notNull(),
+		itemId: varchar("item_id", { length: 36 }).notNull(),
+		readAt: timestamp("read_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_user_read_log_user").on(table.userId),
+	]
+);
+
+// 22. 售后成本记录表
+export const costRecords = pgTable(
+	"cost_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		record_date: date("record_date").notNull(),
+		total_cost: numeric("total_cost", { precision: 10, scale: 2 }).notNull(),
+		work_order_count: integer("work_order_count"),
+		refund_count: integer("refund_count"),
+		note: text("note"),
+		created_by: varchar("created_by", { length: 36 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_cost_records_company").on(table.company_id),
+		index("idx_cost_records_date").on(table.record_date),
+	]
+);
+
+// 1. 企业表
+export const companies = pgTable(
+	"companies",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		name: text("name").notNull(),
+		industry: text("industry").default('电商'),
+		team_size: integer("team_size").default(1),
+		contact_name: text("contact_name"),
+		contact_phone: text("contact_phone"),
+		plan: text("plan").default('basic'),
+		plan_start: timestamp("plan_start", { withTimezone: true }),
+		plan_end: timestamp("plan_end", { withTimezone: true }),
+		plan_period: text("plan_period").default('monthly'),
+		plan_expires_at: timestamp("plan_expires_at", { withTimezone: true }),
+		ai_credits_remaining: integer("ai_credits_remaining").default(3),
+		service_level: text("service_level").default('self'),
+		status: text("status").default('active'),
+		brand_name: text("brand_name"),
+		categories: text("categories").default('[]'),
+		price_range: text("price_range"),
+		platforms: text("platforms").default('[]'),
+		daily_consultations: text("daily_consultations"),
+		pain_points: text("pain_points").default('[]'),
+		supply_type: text("supply_type"),
+		install_service: boolean("install_service").default(false),
+		return_policy: text("return_policy"),
+		profile_completed: boolean("profile_completed").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_companies_status").on(table.status),
+		index("idx_companies_plan").on(table.plan),
+	]
+);
+
+// 2. 用户表
+// role: admin | enterprise_admin | enterprise_manager | staff
+// user_type: small | manager | premium
+export const users = pgTable(
+	"users",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		email: text("email").notNull().unique(),
+		password_hash: text("password_hash"),
+		display_name: text("display_name"),
+		role: text("role").default('staff'),
+		user_type: text("user_type").default('small'),
+		position: text("position"),
+		ai_credits_remaining: integer("ai_credits_remaining").default(3),
+		remaining_credits: integer("remaining_credits").default(3),
+		status: text("status").default('active'),
+		last_login_at: timestamp("last_login_at", { withTimezone: true }),
+		industry_profile_completed: boolean("industry_profile_completed").default(false),
+		industry: varchar("industry", { length: 50 }),
+		expires_at: timestamp("expires_at", { withTimezone: true }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_users_company_id").on(table.company_id),
+		index("idx_users_role").on(table.role),
+		index("idx_users_status").on(table.status),
+	]
+);
+
+	// 兑换码表
+	export const redemptionCodes = pgTable(
+		"redemption_codes",
+		{
+			id: uuid("id").primaryKey().defaultRandom(),
+			code: varchar("code", { length: 20 }).notNull().unique(),
+			plan_type: varchar("plan_type", { length: 30 }).notNull().default('personal_user'),
+			is_used: boolean("is_used").notNull().default(false),
+			used_by: varchar("used_by", { length: 36 }),
+			used_at: timestamp("used_at", { withTimezone: true }),
+			created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+			created_by: varchar("created_by", { length: 36 }),
+			expires_at: timestamp("expires_at", { withTimezone: true }),
+		},
+		(table) => [
+			index("idx_redemption_codes_code").on(table.code),
+			index("idx_redemption_codes_is_used").on(table.is_used),
+		]
+	);
+
+// 用户行业档案表
+export const userIndustryProfiles = pgTable(
+	"user_industry_profiles",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		industry: varchar("industry", { length: 50 }).notNull(),
+		main_product: text("main_product").notNull(),
+		material: text("material"),
+		team_size: varchar("team_size", { length: 20 }).notNull(),
+		profile_data: jsonb("profile_data"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_user_industry_profiles_user_id").on(table.user_id),
+	]
+);
+
+// 3. 客服表
+export const agents = pgTable(
+	"agents",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		name: text("name").notNull(),
+		employee_id: text("employee_id"),
+		hire_date: timestamp("hire_date", { withTimezone: true }),
+		position: text("position").default('售中客服'),
+		training_stage: text("training_stage").default('基础'),
+		status: text("status").default('在职'),
+		role_tag: text("role_tag").default('售前'),
+		skill_tags: text("skill_tags").default(sql`{} `),
+		user_id: varchar("user_id", { length: 36 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_agents_company_id").on(table.company_id),
+		index("idx_agents_status").on(table.status),
+		index("idx_agents_training_stage").on(table.training_stage),
+		index("idx_agents_user_id").on(table.user_id),
+	]
+);
+
+// 4. 诊断脚本表
+export const scripts = pgTable(
+	"scripts",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		category: text("category").notNull(),
+		phenomenon: text("phenomenon").notNull(),
+		diagnosis: text("diagnosis").notNull(),
+		solution: text("solution").notNull(),
+		detail: text("detail"),
+		sort_order: integer("sort_order").default(0),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_scripts_category").on(table.category),
+	]
+);
+
+// 6. AI问题解决记录
+export const problemSolutions = pgTable(
+	"problem_solutions",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		query: text("query").notNull(),
+		category: varchar("category", { length: 50 }),
+		judgment: text("judgment"),
+		steps: text("steps"),
+		script: text("script"),
+		solution_used: boolean("solution_used").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_problem_solutions_company").on(table.company_id),
+		index("idx_problem_solutions_user").on(table.user_id),
+	]
+);
+
+// 7. 标准话术库
+export const phraseLibrary = pgTable(
+	"phrase_library",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		category: varchar("category", { length: 50 }).notNull(),
+		content: text("content").notNull(),
+		is_preset: boolean("is_preset").default(true),
+		use_count: integer("use_count").default(0),
+		created_by: varchar("created_by", { length: 36 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_phrase_library_category").on(table.category),
+		index("idx_phrase_library_company").on(table.company_id),
+	]
+);
+
+// 8. 培训进度
+export const trainingProgress = pgTable(
+	"training_progress",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		module_id: varchar("module_id", { length: 50 }).notNull(),
+		current_step: integer("current_step").default(0),
+		completed: boolean("completed").default(false),
+		completed_at: timestamp("completed_at", { withTimezone: true }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("idx_training_progress_user_module").on(table.user_id, table.module_id),
+	]
+);
+
+// 9. 考核记录
+export const examRecords = pgTable(
+	"exam_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		score: integer("score").notNull(),
+		answers: text("answers").default('[]'),
+		passed: boolean("passed").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_exam_records_user").on(table.user_id),
+	]
+);
+
+// 10. 入职流程记录
+export const onboardingRecords = pgTable(
+	"onboarding_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		agent_id: varchar("agent_id", { length: 36 }),
+		step1_status: varchar("step1_status", { length: 20 }).default('待分配'),
+		step2_status: varchar("step2_status", { length: 20 }).default('未开始'),
+		step3_status: varchar("step3_status", { length: 20 }).default('未开始'),
+		step4_status: varchar("step4_status", { length: 20 }).default('未开始'),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("idx_onboarding_user").on(table.user_id),
+		index("idx_onboarding_company").on(table.company_id),
+	]
+);
+
+// 11. KPI方案
+export const kpiPlans = pgTable(
+	"kpi_plans",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		name: varchar("name", { length: 100 }).notNull(),
+		team_size: integer("team_size"),
+		presale_ratio: integer("presale_ratio").default(50),
+		aftersale_ratio: integer("aftersale_ratio").default(50),
+		daily_orders: integer("daily_orders"),
+		team_stage: varchar("team_stage", { length: 20 }),
+		focus: text("focus").default('[]'),
+		metrics: text("metrics").default('[]'),
+		created_by: varchar("created_by", { length: 36 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_kpi_plans_company").on(table.company_id),
+	]
+);
+
+// 12. 趋势日报
+export const dailyReports = pgTable(
+	"daily_reports",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		report_date: date("report_date").notNull(),
+		type: varchar("type", { length: 20 }).notNull(),
+		title: text("title").notNull(),
+		summary: text("summary"),
+		action_individual: text("action_individual"),
+		action_staff: text("action_staff"),
+		action_admin: text("action_admin"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_daily_reports_date").on(table.report_date),
+		index("idx_daily_reports_type").on(table.type),
+	]
+);
+
+// 13. 日报已阅记录
+export const reportViews = pgTable(
+	"report_views",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		report_id: varchar("report_id", { length: 36 }).notNull(),
+		viewed_at: timestamp("viewed_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		uniqueIndex("idx_report_views_user_report").on(table.user_id, table.report_id),
+	]
+);
+
+// 14. 订阅/会员
+export const subscriptions = pgTable(
+	"subscriptions",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		plan: varchar("plan", { length: 20 }).notNull().default('basic'),
+		plan_period: varchar("plan_period", { length: 20 }).default('monthly'),
+		plan_start: date("plan_start"),
+		plan_end: date("plan_end"),
+		status: varchar("status", { length: 20 }).default('active'),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("idx_subscriptions_company").on(table.company_id),
+	]
+);
+
+// 15. 充值日志
+export const rechargeLogs = pgTable(
+	"recharge_logs",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		user_id: varchar("user_id", { length: 36 }),
+		user_name: varchar("user_name", { length: 100 }),
+		plan: varchar("plan", { length: 20 }).notNull(),
+		period: varchar("period", { length: 20 }).notNull(),
+		amount: numeric("amount", { precision: 10, scale: 2 }),
+		operator_id: varchar("operator_id", { length: 36 }),
+		operator_name: varchar("operator_name", { length: 100 }),
+		remark: text("remark"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_recharge_logs_company").on(table.company_id),
+	]
+);
+
+// 17. 课程表
+export const courses = pgTable(
+	"courses",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		title: text("title").notNull(),
+		description: text("description"),
+		category: text("category"),
+		duration_minutes: integer("duration_minutes").default(30),
+		difficulty: text("difficulty").default('基础'),
+		is_preset: boolean("is_preset").default(false),
+		feishu_doc_url: varchar("feishu_doc_url", { length: 500 }),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_courses_company").on(table.company_id),
+	]
+);
+
+// 18. 学习记录表
+export const learningRecords = pgTable(
+	"learning_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		course_id: varchar("course_id", { length: 36 }).notNull(),
+		progress: integer("progress").default(0),
+		completed: boolean("completed").default(false),
+		score: integer("score"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_learning_records_user").on(table.user_id),
+		index("idx_learning_records_course").on(table.course_id),
+	]
+);
+
+// 19. KPI记录表
+export const kpiRecords = pgTable(
+	"kpi_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		period: text("period").notNull(),
+		metrics: text("metrics"),
+		score: integer("score"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_kpi_records_company").on(table.company_id),
+		index("idx_kpi_records_user").on(table.user_id),
+	]
+);
+
+// 20. 订单表
+export const orders = pgTable(
+	"orders",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull(),
+		user_id: varchar("user_id", { length: 36 }).notNull(),
+		plan: text("plan").notNull(),
+		amount: numeric("amount", { precision: 10, scale: 2 }),
+		status: text("status").default('pending'),
+		payment_method: text("payment_method"),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_orders_company").on(table.company_id),
+		index("idx_orders_user").on(table.user_id),
+	]
+);
+
+// 21. 通知表
+export const notifications = pgTable(
+	"notifications",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		user_id: varchar("user_id", { length: 36 }),
+		type: text("type").notNull(),
+		title: text("title").notNull(),
+		content: text("content"),
+		is_read: boolean("is_read").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_notifications_user").on(table.user_id),
+		index("idx_notifications_company").on(table.company_id),
+	]
+);
+
+export const customKnowledge = pgTable(
+	"custom_knowledge",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }).notNull().references(() => companies.id),
+		title: varchar("title", { length: 200 }).notNull(),
+		content: text("content").notNull(),
+		category: varchar("category", { length: 50 }).notNull().default("other"),
+		tags: text("tags").default("{}"),
+		is_active: boolean("is_active").default(true),
+		created_by: varchar("created_by", { length: 36 }).references(() => users.id),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_custom_knowledge_company").on(table.company_id),
+		index("idx_custom_knowledge_category").on(table.category),
+	]
+);
+
+// 16. 售后管理表（电商专版）
+export const customerRecords = pgTable(
+	"customer_records",
+	{
+		id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+		company_id: varchar("company_id", { length: 36 }),
+		user_id: varchar("user_id", { length: 36 }),
+		customer_name: varchar("customer_name", { length: 100 }),
+		customer_phone: varchar("customer_phone", { length: 20 }),
+		customer_type: varchar("customer_type", { length: 10 }).default('C端'),
+		source: varchar("source", { length: 20 }).default('电商平台'),
+		source_platform: varchar("source_platform", { length: 20 }).default('other'),
+		status: varchar("status", { length: 20 }).default('未服务'),
+		notes: text("notes"),
+		last_query: text("last_query"),
+		last_query_at: timestamp("last_query_at", { withTimezone: true }),
+		service_count: integer("service_count").default(0),
+		risk_tags: text("risk_tags").default('[]'),
+		product_model: varchar("product_model", { length: 100 }).default(''),
+		pit_distance: varchar("pit_distance", { length: 10 }).default('unknown'),
+		water_pressure: varchar("water_pressure", { length: 20 }).default('normal'),
+		follow_up_summary: text("follow_up_summary").default(''),
+		related_order_id: varchar("related_order_id", { length: 100 }).default(''),
+		platform_id: varchar("platform_id", { length: 100 }).default(''),
+		// P0 新增字段
+		order_type: varchar("order_type", { length: 30 }).default(''),
+		sub_type: varchar("sub_type", { length: 30 }).default(''),
+		progress: varchar("progress", { length: 30 }).default(''),
+		assignee_id: varchar("assignee_id", { length: 36 }).default(''),
+		assign_status: varchar("assign_status", { length: 20 }).default('未分配'),
+		promised_deadline: timestamp("promised_deadline", { withTimezone: true }),
+		completed_at: timestamp("completed_at", { withTimezone: true }),
+		first_response_at: timestamp("first_response_at", { withTimezone: true }),
+		customer_demand: varchar("customer_demand", { length: 30 }).default(''),
+		final_solution: varchar("final_solution", { length: 30 }).default(''),
+		closure_result: varchar("closure_result", { length: 30 }).default(''),
+		created_by: varchar("created_by", { length: 36 }).default(''),
+		tags: jsonb("tags").default(sql`'[]'::jsonb`),
+		// P1 售后专属字段
+		actual_water_pressure: varchar("actual_water_pressure", { length: 20 }).default(''),
+		evidence_urls: jsonb("evidence_urls").default(sql`'[]'::jsonb`),
+		compensation_amount: numeric("compensation_amount", { precision: 10, scale: 2 }).default('0'),
+		replacement_parts: jsonb("replacement_parts").default(sql`'[]'::jsonb`),
+		installer_name: varchar("installer_name", { length: 50 }).default(''),
+		// P1 售前专属字段
+		house_pit_distance: varchar("house_pit_distance", { length: 20 }).default(''),
+		house_water_pressure: varchar("house_water_pressure", { length: 30 }).default(''),
+		install_scenario: varchar("install_scenario", { length: 30 }).default(''),
+		purchase_intent: varchar("purchase_intent", { length: 20 }).default(''),
+		responsibility: varchar("responsibility", { length: 20 }).default(''),
+		isStaffCaused: boolean("is_staff_caused").default(false),
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+		updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+	},
+	(table) => [
+		index("idx_customer_records_company").on(table.company_id),
+		index("idx_customer_records_user").on(table.user_id),
+		index("idx_customer_records_source_platform").on(table.source_platform),
+		index("idx_customer_records_related_order_id").on(table.related_order_id),
+	]
+);
+
+export const courseLessons = pgTable("course_lessons", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		stage: integer("stage").notNull(),
+		lessonNumber: integer("lesson_number").notNull(),
+		title: text("title").notNull(),
+		coreContent: text("core_content").notNull().default(''),
+		learningOutcome: text("learning_outcome").notNull().default(''),
+		exercise: text("exercise").notNull().default(''),
+		template: text("template").notNull().default(''),
+		durationMinutes: integer("duration_minutes").notNull().default(5),
+		videoUrl: varchar("video_url", { length: 500 }).notNull().default(''),
+		videoDuration: varchar("video_duration", { length: 20 }).notNull().default(''),
+		isPublished: boolean("is_published").default(true),
+		sortOrder: integer("sort_order").notNull().default(0),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_course_lessons_stage").on(table.stage, table.sortOrder),
+	]
+);
+
+export const userCourseProgress = pgTable("user_course_progress", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		lessonId: uuid("lesson_id").notNull().references(() => courseLessons.id, { onDelete: 'cascade' }),
+		status: varchar("status", { length: 20 }).notNull().default('not_started'),
+		completedAt: timestamp("completed_at", { withTimezone: true }),
+		exerciseSubmitted: boolean("exercise_submitted").default(false),
+		notes: text("notes").default(""),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_user_course_progress_user").on(table.userId),
+	]
+);
+
+export const dailyPractice = pgTable("daily_practice", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		lessonNumber: varchar("lesson_number", { length: 10 }).notNull(),
+		question: text("question").notNull(),
+		questionType: varchar("question_type", { length: 20 }).notNull().default('scenario'),
+		options: jsonb("options"),
+		userAnswer: text("user_answer"),
+		isCorrect: boolean("is_correct"),
+		aiFeedback: text("ai_feedback"),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_daily_practice_user").on(table.userId),
+	]
+);
+
+export const practicalTasks = pgTable("practical_tasks", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		lessonNumber: varchar("lesson_number", { length: 10 }).notNull(),
+		taskType: varchar("task_type", { length: 20 }).notNull().default('text_input'),
+		taskContent: text("task_content").notNull(),
+		userSubmission: text("user_submission"),
+		aiScore: integer("ai_score"),
+		aiFeedback: text("ai_feedback"),
+		submittedAt: timestamp("submitted_at", { withTimezone: true }),
+	},
+	(table) => [
+		index("idx_practical_tasks_user").on(table.userId),
+		index("idx_practical_tasks_lesson").on(table.userId, table.lessonNumber),
+	]
+);
+
+export const wrongQuestions = pgTable("wrong_questions", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		lessonNumber: varchar("lesson_number", { length: 10 }).notNull(),
+		question: text("question").notNull(),
+		questionType: varchar("question_type", { length: 20 }).notNull().default('scenario'),
+		options: text("options"),
+		userAnswer: text("user_answer"),
+		correctAnswer: text("correct_answer"),
+		aiAnalysis: text("ai_analysis"),
+		reviewed: boolean("reviewed").notNull().default(false),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_wrong_questions_user").on(table.userId),
+		index("idx_wrong_questions_reviewed").on(table.userId, table.reviewed),
+	]
+);
+
+export const certificates = pgTable("certificates", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		certificateCode: varchar("certificate_code", { length: 30 }).notNull().unique(),
+		userName: varchar("user_name", { length: 50 }).notNull(),
+		completedAt: timestamp("completed_at", { withTimezone: true }).notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_certificates_code").on(table.certificateCode),
+		index("idx_certificates_user").on(table.userId),
+	]
+);
+
+export const schedules = pgTable("schedules", {
+			id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+			companyId: varchar("company_id", { length: 36 }).notNull(),
+			agentId: varchar("agent_id", { length: 36 }).notNull(),
+			shiftDate: date("shift_date").notNull(),
+			shiftType: text("shift_type").default('早班'),
+			createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+			updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+		},
+		(table) => [
+			index("idx_schedules_company_date").on(table.companyId, table.shiftDate),
+		]
+	);
+
+export const courseHighlights = pgTable("course_highlights", {
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 36 }).notNull(),
+		companyId: varchar("company_id", { length: 36 }),
+		courseId: varchar("course_id", { length: 20 }).notNull(),
+		highlightedText: text("highlighted_text").notNull(),
+		pagePath: varchar("page_path", { length: 100 }),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_course_highlights_user_course").on(table.userId, table.courseId),
+	]
+);
+
+// 7天基础自学任务表
+export const onboardingTasks = pgTable("onboarding_tasks", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	dayNumber: integer("day_number").notNull().unique(),
+	title: text("title").notNull(),
+	description: text("description").notNull(),
+	coreTask: text("core_task").notNull(),
+	operationGuide: text("operation_guide").notNull(),
+	acceptanceCriteria: text("acceptance_criteria").notNull(),
+	relatedRoute: text("related_route"),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// 7天学习进度表
+export const onboardingProgress = pgTable("onboarding_progress", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	dayNumber: integer("day_number").notNull(),
+	status: text("status").notNull().default('pending'),
+	completedAt: timestamp("completed_at", { withTimezone: true }),
+	notes: text("notes"),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+},
+(table) => [
+	uniqueIndex("onboarding_progress_user_day_unique").on(table.userId, table.dayNumber),
+]
+);
+
+// 课程进度表
+export const courseProgress = pgTable("course_progress", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	companyId: varchar("company_id", { length: 36 }),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	lessonId: uuid("lesson_id").notNull(),
+	status: text("status").notNull().default('not_started'),
+	startedAt: timestamp("started_at", { withTimezone: true }),
+	completedAt: timestamp("completed_at", { withTimezone: true }),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+},
+(table) => [
+	uniqueIndex("course_progress_user_lesson_unique").on(table.userId, table.lessonId),
+]
+);
+
+// ─── 旗舰版新增表 ───
+
+// 赔付审批流表
+export const approvalFlows = pgTable("approval_flows", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	recordId: varchar("record_id", { length: 36 }),
+	amount: numeric("amount", { precision: 10, scale: 2 }).notNull().default('0'),
+	reason: text("reason"),
+	submittedBy: varchar("submitted_by", { length: 36 }).notNull(),
+	approvedBy: varchar("approved_by", { length: 36 }),
+	status: varchar("status", { length: 20 }).notNull().default('pending'),
+	rejectReason: text("reject_reason"),
+	level: varchar("level", { length: 20 }).notNull().default('manager'),
+	thresholdConfig: jsonb("threshold_config").default(sql`'{}'::jsonb`),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	approvedAt: timestamp("approved_at", { withTimezone: true }),
+},
+(table) => [
+	index("idx_approval_flows_company").on(table.companyId),
+	index("idx_approval_flows_status").on(table.status),
+]
+);
+
+// 审批阈值配置表
+export const approvalThresholds = pgTable("approval_thresholds", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull().unique(),
+	managerLimit: numeric("manager_limit", { precision: 10, scale: 2 }).default('500'),
+	bossLimit: numeric("boss_limit", { precision: 10, scale: 2 }).default('2000'),
+	bossPlusNote: boolean("boss_plus_note").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 资金周报表
+export const weeklyReports = pgTable("weekly_reports", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	weekStart: date("week_start").notNull(),
+	weekEnd: date("week_end").notNull(),
+	totalLoss: numeric("total_loss", { precision: 10, scale: 2 }).default('0'),
+	lossChangePercent: numeric("loss_change_percent", { precision: 5, scale: 2 }),
+	anomalyCount: integer("anomaly_count").default(0),
+	anomalyDetails: jsonb("anomaly_details").default(sql`'[]'::jsonb`),
+	aiSavingMinutes: integer("ai_saving_minutes").default(0),
+	aiUsageCount: integer("ai_usage_count").default(0),
+	suggestions: text("suggestions"),
+	isRead: boolean("is_read").default(false),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_weekly_reports_company").on(table.companyId),
+	index("idx_weekly_reports_week").on(table.weekStart),
+]
+);
+
+// 降本对比基线表
+export const costBaselines = pgTable("cost_baselines", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull().unique(),
+	baselineCompensationRate: numeric("baseline_compensation_rate", { precision: 5, scale: 2 }),
+	baselineRefundRate: numeric("baseline_refund_rate", { precision: 5, scale: 2 }),
+	baselineResponseTime: numeric("baseline_response_time", { precision: 5, scale: 1 }),
+	baselineSatisfaction: numeric("baseline_satisfaction", { precision: 3, scale: 1 }),
+	systemFee: numeric("system_fee", { precision: 10, scale: 2 }).default('299'),
+	recordedAt: timestamp("recorded_at", { withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 正向激励积分规则表
+export const incentiveRules = pgTable("incentive_rules", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	action: varchar("action", { length: 100 }).notNull(),
+	points: integer("points").notNull().default(1),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_incentive_rules_company").on(table.companyId),
+]
+);
+
+// 积分记录表
+export const incentiveRecords = pgTable("incentive_records", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	agentId: varchar("agent_id", { length: 36 }),
+	ruleId: varchar("rule_id", { length: 36 }),
+	action: varchar("action", { length: 100 }).notNull(),
+	points: integer("points").notNull().default(0),
+	note: text("note"),
+	createdBy: varchar("created_by", { length: 36 }),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_incentive_records_company").on(table.companyId),
+	index("idx_incentive_records_user").on(table.userId),
+]
+);
+
+// 积分兑换设置表
+export const incentiveRedemptions = pgTable("incentive_redemptions", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	name: varchar("name", { length: 200 }).notNull(),
+	pointsRequired: integer("points_required").notNull(),
+	description: text("description"),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// 关键词告警配置表
+export const keywordAlertConfigs = pgTable("keyword_alert_configs", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	keyword: varchar("keyword", { length: 100 }).notNull(),
+	category: varchar("category", { length: 50 }).default('敏感词'),
+	alertLevel: varchar("alert_level", { length: 20 }).default('warning'),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_keyword_alert_configs_company").on(table.companyId),
+]
+);
+
+// 关键词告警记录表
+export const keywordAlertRecords = pgTable("keyword_alert_records", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	configId: varchar("config_id", { length: 36 }),
+	keyword: varchar("keyword", { length: 100 }).notNull(),
+	matchedText: text("matched_text"),
+	agentId: varchar("agent_id", { length: 36 }),
+	agentName: varchar("agent_name", { length: 100 }),
+	alertLevel: varchar("alert_level", { length: 20 }).default('warning'),
+	isResolved: boolean("is_resolved").default(false),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_keyword_alert_records_company").on(table.companyId),
+]
+);
+
+// 自检清单表
+export const selfCheckItems = pgTable("self_check_items", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	content: text("content").notNull(),
+	category: varchar("category", { length: 50 }).default('日常检查'),
+	isPreset: boolean("is_preset").default(false),
+	sortOrder: integer("sort_order").default(0),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_self_check_items_company").on(table.companyId),
+]
+);
+
+// 自检记录表
+export const selfCheckRecords = pgTable("self_check_records", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	checkDate: date("check_date").notNull(),
+	results: jsonb("results").default(sql`'[]'::jsonb`),
+	totalItems: integer("total_items").default(0),
+	passedItems: integer("passed_items").default(0),
+	score: numeric("score", { precision: 5, scale: 1 }),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_self_check_records_company").on(table.companyId),
+	index("idx_self_check_records_date").on(table.checkDate),
+]
+);
+
+// 自检提醒配置表
+export const selfCheckReminders = pgTable("self_check_reminders", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull().unique(),
+	frequency: varchar("frequency", { length: 20 }).default('weekly'),
+	reminderDay: integer("reminder_day").default(1),
+	isActive: boolean("is_active").default(true),
+	lastRemindedAt: timestamp("last_reminded_at", { withTimezone: true }),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 知识库更新提醒配置表
+export const knowledgeUpdateReminders = pgTable("knowledge_update_reminders", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull().unique(),
+	frequency: varchar("frequency", { length: 20 }).default('biweekly'),
+	lastCheckAt: timestamp("last_check_at", { withTimezone: true }),
+	nextRemindAt: timestamp("next_remind_at", { withTimezone: true }),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// 单品盈利损耗表
+export const productProfitRecords = pgTable("product_profit_records", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	productName: varchar("product_name", { length: 200 }).notNull(),
+	sku: varchar("sku", { length: 100 }),
+	sellPrice: numeric("sell_price", { precision: 10, scale: 2 }).default('0'),
+	costPrice: numeric("cost_price", { precision: 10, scale: 2 }).default('0'),
+	afterSaleLoss: numeric("after_sale_loss", { precision: 10, scale: 2 }).default('0'),
+	netProfit: numeric("net_profit", { precision: 10, scale: 2 }).default('0'),
+	profitLevel: varchar("profit_level", { length: 20 }).default('保本'),
+	refundCount: integer("refund_count").default(0),
+	refundRate: numeric("refund_rate", { precision: 5, scale: 2 }).default('0'),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+},
+(table) => [
+	index("idx_product_profit_records_company").on(table.companyId),
+]
+);
+
+// 我的管理方案（毕业作品）表
+export const managementPlans = pgTable("management_plans", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	scriptsFramework: text("scripts_framework"),
+	scriptsAiOptimized: text("scripts_ai_optimized"),
+	scriptsCompleted: boolean("scripts_completed").default(false),
+	kpiPlan: text("kpi_plan"),
+	kpiAiOptimized: text("kpi_ai_optimized"),
+	kpiCompleted: boolean("kpi_completed").default(false),
+	schedulingRules: text("scheduling_rules"),
+	schedulingAiOptimized: text("scheduling_ai_optimized"),
+	schedulingCompleted: boolean("scheduling_completed").default(false),
+	qualityStandards: text("quality_standards"),
+	qualityAiOptimized: text("quality_ai_optimized"),
+	qualityCompleted: boolean("quality_completed").default(false),
+	sopChecklist: text("sop_checklist"),
+	sopAiOptimized: text("sop_ai_optimized"),
+	sopCompleted: boolean("sop_completed").default(false),
+	progress: integer("progress").default(0),
+	isGraduated: boolean("is_graduated").default(false),
+	graduatedAt: timestamp("graduated_at", { withTimezone: true }),
+	generatedDoc: text("generated_doc"),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_management_plans_user").on(table.userId),
+	index("idx_management_plans_company").on(table.companyId),
+]
+);
+
+// ─── 洞察推送表 ───
+
+export const insights = pgTable("insights", {
+	id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()::text`),
+	companyId: varchar("company_id", { length: 36 }).notNull(),
+	userId: varchar("user_id", { length: 36 }),
+	type: varchar("type", { length: 20 }).notNull(),
+	severity: varchar("severity", { length: 10 }).notNull(),
+	title: varchar("title", { length: 200 }).notNull(),
+	content: text("content").notNull(),
+	recommendation: text("recommendation").notNull(),
+	relatedRoute: varchar("related_route", { length: 200 }),
+	relatedCourseId: integer("related_course_id"),
+	isRead: boolean("is_read").default(false),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_insights_company_id").on(table.companyId),
+	index("idx_insights_user_id").on(table.userId),
+	index("idx_insights_type").on(table.type),
+	index("idx_insights_is_read").on(table.isRead),
+	index("idx_insights_created_at").on(table.createdAt),
+]
+);
+
+// ===== src/storage/database/supabase-client.ts =====
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { execSync } from 'child_process';
+import { getReportBuffer, createWrappedFetch } from 'coze-coding-dev-sdk';
+
+let envLoaded = false;
+
+interface SupabaseCredentials {
+  url: string;
+  anonKey: string;
+}
+
+function loadEnv(): void {
+  if (envLoaded || (process.env.COZE_SUPABASE_URL && process.env.COZE_SUPABASE_ANON_KEY)) {
+    return;
+  }
+
+  try {
+    try {
+      require('dotenv').config();
+      if (process.env.COZE_SUPABASE_URL && process.env.COZE_SUPABASE_ANON_KEY) {
+        envLoaded = true;
+        return;
+      }
+    } catch {
+      // dotenv not available
+    }
+
+    const pythonCode = `
+import os
+import sys
+try:
+    from coze_workload_identity import Client
+    client = Client()
+    env_vars = client.get_project_env_vars()
+    client.close()
+    for env_var in env_vars:
+        print(f"{env_var.key}={env_var.value}")
+except Exception as e:
+    print(f"# Error: {e}", file=sys.stderr)
+`;
+
+    const output = execSync(`python3 -c '${pythonCode.replace(/'/g, "'\"'\"'")}'`, {
+      encoding: 'utf-8',
+      timeout: 10000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+
+    const lines = output.trim().split('\n');
+    for (const line of lines) {
+      if (line.startsWith('#')) continue;
+      const eqIndex = line.indexOf('=');
+      if (eqIndex > 0) {
+        const key = line.substring(0, eqIndex);
+        let value = line.substring(eqIndex + 1);
+        if ((value.startsWith("'") && value.endsWith("'")) ||
+            (value.startsWith('"') && value.endsWith('"'))) {
+          value = value.slice(1, -1);
+        }
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
+      }
+    }
+
+    envLoaded = true;
+  } catch {
+    // Silently fail
+  }
+}
+
+/**
+ * Check if we are in a build phase where env vars may not be available.
+ * During `next build`, routes are imported for page data collection,
+ * but Supabase env vars are only injected at runtime.
+ */
+function isBuildPhase(): boolean {
+  // Next.js sets NEXT_PHASE during build
+  if (process.env.NEXT_PHASE === 'phase-production-build') return true;
+  // If COZE_SUPABASE_URL is missing after loadEnv, assume build phase
+  return false;
+}
+
+function getSupabaseCredentials(): SupabaseCredentials | null {
+  const hadNoCreds = !process.env.COZE_SUPABASE_URL;
+  loadEnv();
+
+  // If env vars just became available, invalidate cached placeholder client
+  if (hadNoCreds && process.env.COZE_SUPABASE_URL) {
+    clientCache.delete('no-token');
+  }
+
+  const url = process.env.COZE_SUPABASE_URL;
+  const anonKey = process.env.COZE_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    return null;
+  }
+
+  return { url, anonKey };
+}
+
+function getSupabaseServiceRoleKey(): string | undefined {
+  loadEnv();
+  return process.env.COZE_SUPABASE_SERVICE_ROLE_KEY;
+}
+
+/**
+ * Lazy-initialized Supabase client cache.
+ * Key format: "token:<token>" or "no-token" or "service-role"
+ */
+const clientCache = new Map<string, SupabaseClient>();
+
+function createConfiguredClient(url: string, key: string, globalOptions: Record<string, any>): SupabaseClient {
+  return createClient(url, key, {
+    global: globalOptions,
+    db: {
+      timeout: 60000,
+    },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
+
+function getSupabaseClient(token?: string): SupabaseClient {
+  // Only cache the no-token (service role / anon key) client.
+  // Token-based clients are per-request and should not be cached.
+  if (!token) {
+    const cached = clientCache.get('no-token');
+    if (cached) return cached;
+  }
+
+  const credentials = getSupabaseCredentials();
+
+  // During build phase, env vars may not be available.
+  // Return a placeholder client that defers errors to request time.
+  if (!credentials) {
+    if (isBuildPhase() || !process.env.COZE_SUPABASE_URL) {
+      // Create a placeholder client with dummy values so module imports don't crash during build.
+      // Actual requests will fail with connection errors, which is expected during build.
+      const placeholder = createConfiguredClient('https://placeholder.supabase.co', 'placeholder-key', {});
+      if (!token) clientCache.set('no-token', placeholder);
+      return placeholder;
+    }
+    throw new Error('COZE_SUPABASE_URL is not set');
+  }
+
+  const { url, anonKey } = credentials;
+
+  let key: string;
+  if (token) {
+    key = anonKey;
+  } else {
+    const serviceRoleKey = getSupabaseServiceRoleKey();
+    key = serviceRoleKey ?? anonKey;
+  }
+
+  const globalOptions: Record<string, any> = {};
+  if (token) {
+    globalOptions.headers = { Authorization: `Bearer ${token}` };
+  }
+  try {
+    const buffer = getReportBuffer();
+    if (buffer) {
+      globalOptions.fetch = createWrappedFetch(buffer, 'supabase');
+    }
+  } catch {
+    // Silent — reporting setup failure should not block client creation
+  }
+
+  const client = createConfiguredClient(url, key, globalOptions);
+  if (!token) clientCache.set('no-token', client);
+  return client;
+}
+
+export { loadEnv, getSupabaseCredentials, getSupabaseServiceRoleKey, getSupabaseClient };
+
